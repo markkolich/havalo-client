@@ -33,6 +33,7 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,6 +61,18 @@ public class DeleteTest extends HavaloClientTestCase {
 		}
 	}
 	
+	@After
+	public void teardown() {
+		HttpConnectorResponse response = null;
+		try {
+			// Ignore errors, if this delete fails, whatever it's part of a
+			// local tear down for this DELETE test case.
+			response = client_.deleteObject("test", "object.json");
+		} finally {
+			consumeQuietly(response);
+		}
+	}
+
 	@Test
 	public void delete() throws Exception {
 		HttpConnectorResponse response = null;
@@ -83,5 +96,5 @@ public class DeleteTest extends HavaloClientTestCase {
 			consumeQuietly(response);
 		}
 	}
-	
+		
 }

@@ -29,6 +29,7 @@ package com.kolich.havalo.client.api;
 import static com.kolich.common.DefaultCharacterEncoding.UTF_8;
 import static com.kolich.common.http.HttpConnectorResponse.consumeQuietly;
 import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
+import static org.apache.commons.lang3.RandomStringUtils.randomAscii;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpHeaders.IF_MATCH;
 import static org.apache.http.HttpStatus.SC_CONFLICT;
@@ -82,10 +83,11 @@ public class PutTest extends HavaloClientTestCase {
 	public void putLongName() throws Exception {
 		HttpConnectorResponse response = null;
 		try {
-			// Trying to stay under the default Tomcat maxHttpHeaderSize of 8K
+			// Trying to stay under the default Tomcat maxHttpHeaderSize of 8KB
 			// http://stackoverflow.com/questions/6837505/setting-max-http-header-size-with-ajp-tomcat-6-0
 			// http://stackoverflow.com/questions/1730158/how-to-set-the-ajp-packet-size-in-tomcat
-			final String[] prefixes = getRandomPrefix(400);
+			// Apparently the max header size in Jetty is less around 4KB
+			final String[] prefixes = getRandomPrefix(200);
 			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 					prefixes);
@@ -217,11 +219,11 @@ public class PutTest extends HavaloClientTestCase {
 			consumeQuietly(response);
 		}
 	}
-	
+
 	private static final String[] getRandomPrefix(final int length) {
 		final String[] prefixes = new String[length];
 		for(int i = 0, l = prefixes.length; i < l; i++) {
-			prefixes[i] = Long.toString(System.currentTimeMillis());
+			prefixes[i] = randomAscii(10);
 		}
 		return prefixes;
 	}

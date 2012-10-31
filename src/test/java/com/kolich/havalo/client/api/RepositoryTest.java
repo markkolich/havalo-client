@@ -47,7 +47,7 @@ import com.kolich.havalo.client.entities.ObjectList;
 
 public class RepositoryTest extends HavaloClientTestCase {
 	
-	private static final String SAMPLE_JSON_OBJECT = "{}";
+	private static final String SAMPLE_JSON_OBJECT = "{\"foo\":\"bar\"}";
 	
 	public RepositoryTest() throws Exception {
 		super();

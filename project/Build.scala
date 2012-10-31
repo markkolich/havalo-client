@@ -40,13 +40,15 @@ object Dependencies {
   private val slf4j = "org.slf4j" % "slf4j-api" % "1.7.2" % "compile"
   
   private val junitInterface = "com.novocode" % "junit-interface" % "0.10-M2" % "test"
+  private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.1" % "test"
 
   val deps = Seq(
     // Internal.
     kolichCommon,
     // External.
     slf4j,
-    junitInterface)
+    junitInterface,
+    commonsLang)
 
 }
 
