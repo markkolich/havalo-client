@@ -33,6 +33,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
@@ -67,6 +68,11 @@ public final class HavaloClient extends HavaloAbstractService {
 	
 	public HttpConnectorResponse createRepository() {
 		return doMethod(new HttpPost(SLASH_STRING + API_ACTION_REPOSITORY));
+	}
+	
+	public HttpConnectorResponse deleteRepository(final UUID repoId) {
+		return doMethod(new HttpDelete(SLASH_STRING + API_ACTION_REPOSITORY +
+			SLASH_STRING + repoId));
 	}
 	
 	public HttpConnectorResponse listObjects(final String... path) {

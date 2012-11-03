@@ -51,7 +51,8 @@ import com.kolich.havalo.client.entities.FileObject;
 
 public class PutTest extends HavaloClientTestCase {
 	
-	private static final String SAMPLE_JSON_OBJECT = "{}";
+	private static final String SAMPLE_JSON_OBJECT =
+		"{\"dog\":\"cat\",\"integer\":2}";
 	
 	public PutTest() throws Exception {
 		super();
@@ -69,6 +70,16 @@ public class PutTest extends HavaloClientTestCase {
 			// Validate JSON deserialization
 			gson_.fromJson(EntityUtils.toString(response.getEntity(), UTF_8),
 				FileObject.class);
+			consumeQuietly(response);
+			// GET the object to make sure it actually worked.
+			response = client_.getObject("test", "jsonObject/hmm");
+			assertTrue("Failed to GET sample object after PUT: " +
+				response.getStatus(), response.getStatus() == SC_OK);
+			final String received = EntityUtils.toString(response.getEntity(),
+				UTF_8);
+			assertTrue("Object received on GET did not match object " +
+				"sent on PUT (sent="+ SAMPLE_JSON_OBJECT + ", received=" +
+					received + ")", received.equals(SAMPLE_JSON_OBJECT));
 			consumeQuietly(response);
 			// Tear down
 			response = client_.deleteObject("test", "jsonObject/hmm");

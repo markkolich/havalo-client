@@ -31,9 +31,12 @@ import static com.kolich.common.http.HttpConnectorResponse.consumeQuietly;
 import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.Assert.assertTrue;
+
+import java.util.UUID;
 
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
@@ -54,19 +57,31 @@ public class RepositoryTest extends HavaloClientTestCase {
 	}
 	
 	@Test
-	public void createRepository() throws Exception {
+	public void createAndDeleteRepository() throws Exception {
 		HttpConnectorResponse response = null;
 		try {
 			response = client_.createRepository();
 			assertTrue("Failed to create repository: " +
 				response.getStatus(), response.getStatus() == SC_CREATED);
-			gson_.fromJson(EntityUtils.toString(response.getEntity(), UTF_8),
-				KeyPair.class);
-			/*
-			final KeyPair kp = gson_.fromJson(EntityUtils.toString(response.getEntity(), UTF_8),
-				KeyPair.class);
-			System.out.println(kp.getKey().toString() + " " + kp.getSecret());
-			*/
+			final KeyPair kp = gson_.fromJson(EntityUtils.toString(
+				response.getEntity(), UTF_8), KeyPair.class);
+			//System.out.println(kp.getKey().toString() + " " + kp.getSecret());
+			consumeQuietly(response);
+			response = client_.deleteRepository(kp.getKey());
+			assertTrue("Failed to delete repository: " +
+				response.getStatus(), response.getStatus() == SC_NO_CONTENT);
+		} finally {
+			consumeQuietly(response);
+		}
+	}
+	
+	@Test
+	public void deleteNonExistentRepository() throws Exception {
+		HttpConnectorResponse response = null;
+		try {
+			response = client_.deleteRepository(UUID.randomUUID());
+			assertTrue("Uh, successfully deleted non-existent repository?: " +
+				response.getStatus(), response.getStatus() == SC_NOT_FOUND);
 		} finally {
 			consumeQuietly(response);
 		}
