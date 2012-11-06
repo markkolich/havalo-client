@@ -113,7 +113,7 @@ object Spring extends Build {
       publishArtifact in packageDoc := false,
       // Override the global name of the artifact.
       artifactName <<= (name in (Compile, packageBin)) { projectName =>
-        (config: String, module: ModuleID, artifact: Artifact) =>
+        (config: ScalaVersion, module: ModuleID, artifact: Artifact) =>
           var newName = projectName
           if (module.revision.nonEmpty) {
             newName += "-" + module.revision

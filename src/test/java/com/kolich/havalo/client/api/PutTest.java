@@ -168,11 +168,18 @@ public class PutTest extends HavaloClientTestCase {
 				response.getStatus(), response.getStatus() == SC_OK);
 			// Validate JSON deserialization
 			gson_.fromJson(EntityUtils.toString(response.getEntity(), UTF_8),
-				FileObject.class);
-			consumeQuietly(response);
+				FileObject.class);			
 			// Extract the ETag HTTP response header from the PUT.
-			final String eTag = response.getHeaderValue(HttpHeaders.ETAG);
+			final String eTag = response.getHeaderValue(HttpHeaders.ETAG);			
 			assertNotNull("ETag header on PUT was null.", eTag);
+			consumeQuietly(response);
+			// Call HEAD on the object to fetch and validate its meta data.
+			response = client_.getObjectMetaData(prefixes);
+			// Validate that the eTag we sent in was returned with the response
+			// meta data on the HEAD request to the API.
+			assertTrue("Fetched Etag does not match ETag delivered on PUT",
+				response.getETag().equals(eTag));
+			consumeQuietly(response);
 			// Do another put with the correct If-Match ETag.
 			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json"),

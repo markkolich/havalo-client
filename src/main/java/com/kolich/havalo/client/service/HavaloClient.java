@@ -39,6 +39,7 @@ import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -96,6 +97,13 @@ public final class HavaloClient extends HavaloAbstractService {
 			API_ACTION_OBJECT + SLASH_STRING +
 			urlEncode(varargsToPrefixString(path)));
 		return doMethod(get);
+	}
+	
+	public HttpConnectorResponse getObjectMetaData(final String... path) {
+		final HttpHead head = new HttpHead(SLASH_STRING +
+			API_ACTION_OBJECT + SLASH_STRING +
+			urlEncode(varargsToPrefixString(path)));
+		return doMethod(head);
 	}
 	
 	public HttpConnectorResponse putObject(final InputStream input,
