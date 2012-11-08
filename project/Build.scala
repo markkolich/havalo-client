@@ -66,7 +66,7 @@ object Spring extends Build {
   import Resolvers._
 
   private val aName = "havalo-client"
-  private val aVer = "0.0.1"
+  private val aVer = "0.0.3"
   private val aOrg = "com.kolich"
 
   lazy val havaloClient: Project = Project(
