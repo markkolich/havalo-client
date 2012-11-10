@@ -26,13 +26,13 @@
 
 package com.kolich.havalo.client;
 
-import com.kolich.common.http.HttpConnector;
-import com.kolich.common.http.KolichDefaultHttpClient.KolichHttpClientFactory;
 import com.kolich.havalo.client.service.HavaloClient;
 import com.kolich.havalo.client.service.HavaloClientCredentials;
 import com.kolich.havalo.client.service.HavaloClientSigner;
 import com.kolich.havalo.client.signing.HavaloAbstractSigner;
 import com.kolich.havalo.client.signing.algorithms.HMACSHA256Signer;
+import com.kolich.http.HttpConnector;
+import com.kolich.http.KolichDefaultHttpClient.KolichHttpClientFactory;
 
 public abstract class HavaloClientTestCase extends HavaloClientBaseTest {
 	

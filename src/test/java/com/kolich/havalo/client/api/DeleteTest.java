@@ -26,7 +26,7 @@
 
 package com.kolich.havalo.client.api;
 
-import static com.kolich.common.http.HttpConnectorResponse.consumeQuietly;
+import static com.kolich.http.HttpConnectorResponse.consumeQuietly;
 import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -37,8 +37,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.kolich.common.http.HttpConnectorResponse;
 import com.kolich.havalo.client.HavaloClientTestCase;
+import com.kolich.http.HttpConnectorResponse;
 
 public class DeleteTest extends HavaloClientTestCase {
 	

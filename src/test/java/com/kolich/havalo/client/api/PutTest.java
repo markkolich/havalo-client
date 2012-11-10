@@ -27,7 +27,7 @@
 package com.kolich.havalo.client.api;
 
 import static com.kolich.common.DefaultCharacterEncoding.UTF_8;
-import static com.kolich.common.http.HttpConnectorResponse.consumeQuietly;
+import static com.kolich.http.HttpConnectorResponse.consumeQuietly;
 import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
 import static org.apache.commons.lang3.RandomStringUtils.randomAscii;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
@@ -45,9 +45,9 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 
-import com.kolich.common.http.HttpConnectorResponse;
 import com.kolich.havalo.client.HavaloClientTestCase;
 import com.kolich.havalo.client.entities.FileObject;
+import com.kolich.http.HttpConnectorResponse;
 
 public class PutTest extends HavaloClientTestCase {
 	

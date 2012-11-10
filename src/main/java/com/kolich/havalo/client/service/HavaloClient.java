@@ -46,9 +46,9 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.message.BasicNameValuePair;
 
-import com.kolich.common.http.HttpConnector;
-import com.kolich.common.http.HttpConnectorResponse;
 import com.kolich.havalo.client.signing.HavaloAbstractSigner;
+import com.kolich.http.HttpConnector;
+import com.kolich.http.HttpConnectorResponse;
 
 public final class HavaloClient extends HavaloAbstractService {
 		

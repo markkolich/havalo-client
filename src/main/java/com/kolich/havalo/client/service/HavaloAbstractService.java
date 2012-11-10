@@ -39,10 +39,10 @@ import java.util.List;
 
 import org.apache.http.client.methods.HttpRequestBase;
 
-import com.kolich.common.http.HttpConnector;
-import com.kolich.common.http.HttpConnectorResponse;
 import com.kolich.havalo.client.HavaloClientException;
 import com.kolich.havalo.client.signing.HavaloAbstractSigner;
+import com.kolich.http.HttpConnector;
+import com.kolich.http.HttpConnectorResponse;
 
 public abstract class HavaloAbstractService {
 	

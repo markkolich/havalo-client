@@ -33,7 +33,8 @@ object Dependencies {
 
   // Internal dependencies
 
-  private val kolichCommon = "com.kolich" % "kolich-common" % "0.0.3.2" % "compile"
+  private val kolichCommon = "com.kolich" % "kolich-common" % "0.0.4" % "compile"
+  private val kolichHttpClient = "com.kolich" % "kolich-http-client" % "0.0.1" % "compile"
 
   // External dependencies
 
@@ -44,7 +45,7 @@ object Dependencies {
 
   val deps = Seq(
     // Internal.
-    kolichCommon,
+    kolichCommon, kolichHttpClient,
     // External.
     slf4j,
     junitInterface,
@@ -66,7 +67,7 @@ object Spring extends Build {
   import Resolvers._
 
   private val aName = "havalo-client"
-  private val aVer = "0.0.3"
+  private val aVer = "0.0.4"
   private val aOrg = "com.kolich"
 
   lazy val havaloClient: Project = Project(
