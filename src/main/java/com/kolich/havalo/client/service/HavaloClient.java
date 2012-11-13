@@ -88,89 +88,85 @@ public final class HavaloClient extends HavaloAbstractService {
 		client_ = client;
 		gson_ = getDefaultGsonBuilder();
 	}
+	
+	private abstract class HavaloHttpClientClosure<T>
+		extends HttpClient4Closure<HttpFailure,T> {
+		public HavaloHttpClientClosure(final HttpClient client) {
+			super(client);
+		}
+		@Override
+		public void before(final HttpRequestBase request) {
+			signRequest(request);
+		}
+		@Override
+		public boolean check(final HttpResponse response,
+			final HttpContext context) {
+			return check(response.getStatusLine().getStatusCode());
+		}
+		public abstract boolean check(final int statusCode);
+		@Override
+		public abstract T success(final HttpSuccess success) throws Exception;
+		@Override
+		public HttpFailure failure(final HttpFailure failure) {
+			return failure;
+		}
+	}
 
 	public HttpResponseEither<HttpFailure,KeyPair> authenticate() {
-		return new HttpClient4Closure<HttpFailure,KeyPair>(client_) {
+		return new HavaloHttpClientClosure<KeyPair>(client_) {
 			@Override
-			public void before(final HttpRequestBase request) {
-				signRequest(request);
-			}
-			@Override
-			public boolean check(final HttpResponse response,
-				final HttpContext context) {
+			public boolean check(final int statusCode) {
 				// The POST of auth credentials is only successful when the
 				// resulting status code is a 200 OK.  Any other status
 				// code on the response is failure.
-				return response.getStatusLine().getStatusCode() == SC_OK;
+				return statusCode == SC_OK;
 			}
 			@Override
 			public KeyPair success(final HttpSuccess success) throws Exception {
 				return gson_.create().fromJson(
 					responseToString(success.getResponse()),
 					KeyPair.class);
-			}
-			@Override
-			public HttpFailure failure(final HttpFailure failure) {
-				return failure;
-			}
+			}			
 		}.post(new HttpPost(SLASH_STRING + API_ACTION_AUTHENTICATE));
 	}
 	
 	public HttpResponseEither<HttpFailure,KeyPair> createRepository() {
-		return new HttpClient4Closure<HttpFailure,KeyPair>(client_) {
+		return new HavaloHttpClientClosure<KeyPair>(client_) {
 			@Override
-			public void before(final HttpRequestBase request) {
-				signRequest(request);
-			}
-			@Override
-			public boolean check(final HttpResponse response,
-				final HttpContext context) {
+			public boolean check(final int statusCode) {
 				// The POST of a repository is only successful when the
 				// resulting status code is a 201 Created.  Any other status
 				// code on the response is failure.
-				return response.getStatusLine().getStatusCode() == SC_CREATED;
+				return statusCode == SC_CREATED;
 			}
 			@Override
 			public KeyPair success(final HttpSuccess success) throws Exception {
 				return gson_.create().fromJson(
 					responseToString(success.getResponse()),
 					KeyPair.class);
-			}
-			@Override
-			public HttpFailure failure(final HttpFailure failure) {
-				return failure;
 			}
 		}.post(new HttpPost(SLASH_STRING + API_ACTION_REPOSITORY));
 	}
 	
 	public HttpResponseEither<HttpFailure,Integer> deleteRepository(final UUID repoId) {
-		return new HttpClient4Closure<HttpFailure,Integer>(client_) {
+		return new HavaloHttpClientClosure<Integer>(client_) {
 			@Override
-			public void before(final HttpRequestBase request) {
-				signRequest(request);
-			}
-			@Override
-			public boolean check(final HttpResponse response,
-				final HttpContext context) {
+			public boolean check(final int statusCode) {
 				// The DELETE of a repository is only successful when the
 				// resulting status code is a 200 OK.  Any other status
 				// code on the response is failure.
-				return response.getStatusLine().getStatusCode() == SC_NO_CONTENT;
+				return statusCode == SC_NO_CONTENT;
 			}
 			@Override
 			public Integer success(final HttpSuccess success) {
 				return success.getResponse().getStatusLine().getStatusCode();
-			}
-			@Override
-			public HttpFailure failure(final HttpFailure failure) {
-				return failure;
 			}
 		}.delete(new HttpDelete(SLASH_STRING + API_ACTION_REPOSITORY +
 			SLASH_STRING + repoId));
 	}
 	
 	public HttpResponseEither<HttpFailure,ObjectList> listObjects(final String... path) {
-		return new HttpClient4Closure<HttpFailure,ObjectList>(client_) {
+		return new HavaloHttpClientClosure<ObjectList>(client_) {
 			@Override
 			public void before(final HttpRequestBase request) {
 				final List<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -181,25 +177,20 @@ public final class HavaloClient extends HavaloAbstractService {
 				// Update the URI to include the "?query=" parameters.
 				request.setURI(URI.create(request.getURI().toString() +
 					QUERY_STRING + URLEncodedUtils.format(params, UTF_8)));
-				signRequest(request);
+				super.before(request);
 			}
 			@Override
-			public boolean check(final HttpResponse response,
-				final HttpContext context) {
+			public boolean check(final int statusCode) {
 				// The listing of objects is only successful when the
 				// resulting status code is a 200 OK.  Any other status
 				// code on the response is failure.
-				return response.getStatusLine().getStatusCode() == SC_OK;
+				return statusCode == SC_OK;
 			}
 			@Override
 			public ObjectList success(final HttpSuccess success) throws Exception {
 				return gson_.create().fromJson(
 					responseToString(success.getResponse()),
 					ObjectList.class);
-			}
-			@Override
-			public HttpFailure failure(final HttpFailure failure) {
-				return failure;
 			}
 		}.get(new HttpGet(SLASH_STRING + API_ACTION_REPOSITORY));
 	}
@@ -210,18 +201,13 @@ public final class HavaloClient extends HavaloAbstractService {
 	
 	public HttpResponseEither<HttpFailure,Long> getObject(
 		final OutputStream destination, final String... path) {
-		return new HttpClient4Closure<HttpFailure,Long>(client_) {
+		return new HavaloHttpClientClosure<Long>(client_) {
 			@Override
-			public void before(final HttpRequestBase request) {
-				signRequest(request);
-			}
-			@Override
-			public boolean check(final HttpResponse response,
-				final HttpContext context) {
+			public boolean check(final int statusCode) {
 				// The GET of an object is only successful when the
 				// resulting status code is a 200 OK.  Any other status
 				// code on the response is failure.
-				return response.getStatusLine().getStatusCode() == SC_OK;
+				return statusCode == SC_OK;
 			}
 			@Override
 			public Long success(final HttpSuccess success) throws Exception {
@@ -229,36 +215,23 @@ public final class HavaloClient extends HavaloAbstractService {
 					success.getResponse().getEntity().getContent(),
 					destination);
 			}
-			@Override
-			public HttpFailure failure(final HttpFailure failure) {
-				return failure;
-			}
 		}.get(new HttpGet(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
 			urlEncode(varargsToPrefixString(path))));
 	}
 	
 	public HttpResponseEither<HttpFailure,List<Header>> getObjectMetaData(
 		final String... path) {
-		return new HttpClient4Closure<HttpFailure,List<Header>>(client_) {
+		return new HavaloHttpClientClosure<List<Header>>(client_) {
 			@Override
-			public void before(final HttpRequestBase request) {
-				signRequest(request);
-			}
-			@Override
-			public boolean check(final HttpResponse response,
-				final HttpContext context) {
+			public boolean check(final int statusCode) {
 				// The HEAD of an object is only successful when the
 				// resulting status code is a 200 OK.  Any other status
 				// code on the response is failure.
-				return response.getStatusLine().getStatusCode() == SC_OK;
+				return statusCode == SC_OK;
 			}
 			@Override
 			public List<Header> success(final HttpSuccess success) {
 				return Arrays.asList(success.getResponse().getAllHeaders());
-			}
-			@Override
-			public HttpFailure failure(final HttpFailure failure) {
-				return failure;
 			}
 		}.head(new HttpHead(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
 			urlEncode(varargsToPrefixString(path))));
@@ -267,7 +240,7 @@ public final class HavaloClient extends HavaloAbstractService {
 	public HttpResponseEither<HttpFailure,FileObject> putObject(
 		final InputStream input, final long contentLength,
 		final Header[] headers, final String... path) {
-		return new HttpClient4Closure<HttpFailure,FileObject>(client_) {
+		return new HavaloHttpClientClosure<FileObject>(client_) {
 			@Override
 			public void before(final HttpRequestBase request) {
 				if(headers != null) {
@@ -275,25 +248,20 @@ public final class HavaloClient extends HavaloAbstractService {
 				}
 				((HttpPut)request).setEntity(new InputStreamEntity(input,
 					contentLength));
-				signRequest(request);
+				super.before(request);
 			}
 			@Override
-			public boolean check(final HttpResponse response,
-				final HttpContext context) {
+			public boolean check(final int statusCode) {
 				// The upload of an object is only successful when the
 				// resulting status code is a 200 OK.  Any other status
 				// code on the response is failure.
-				return response.getStatusLine().getStatusCode() == SC_OK;
+				return statusCode == SC_OK;
 			}
 			@Override
 			public FileObject success(final HttpSuccess success) throws Exception {
 				return gson_.create().fromJson(
 					responseToString(success.getResponse()),
 					FileObject.class);
-			}
-			@Override
-			public HttpFailure failure(final HttpFailure failure) {
-				return failure;
 			}
 		}.put(new HttpPut(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
 			urlEncode(varargsToPrefixString(path))));
@@ -312,29 +280,24 @@ public final class HavaloClient extends HavaloAbstractService {
 		
 	public HttpResponseEither<HttpFailure,Integer> deleteObject(
 		final Header[] headers, final String... path) {
-		return new HttpClient4Closure<HttpFailure,Integer>(client_) {
+		return new HavaloHttpClientClosure<Integer>(client_) {
 			@Override
 			public void before(final HttpRequestBase request) {
 				if(headers != null) {
 					request.setHeaders(headers);
 				}
-				signRequest(request);
+				super.before(request);
 			}
 			@Override
-			public boolean check(final HttpResponse response,
-				final HttpContext context) {
+			public boolean check(final int statusCode) {
 				// The deletion of an object is only successful when the
 				// resulting status code is a 204 No Content.  Any other status
 				// code on the response is failure.
-				return response.getStatusLine().getStatusCode() == SC_NO_CONTENT;
+				return statusCode == SC_NO_CONTENT;
 			}
 			@Override
 			public Integer success(final HttpSuccess success) {
 				return success.getResponse().getStatusLine().getStatusCode();
-			}
-			@Override
-			public HttpFailure failure(final HttpFailure failure) {
-				return failure;
 			}
 		}.delete(new HttpDelete(SLASH_STRING + API_ACTION_OBJECT +
 			SLASH_STRING + urlEncode(varargsToPrefixString(path))));
