@@ -27,28 +27,44 @@
 package com.kolich.havalo.client.service;
 
 import static com.kolich.common.DefaultCharacterEncoding.UTF_8;
+import static com.kolich.common.entities.KolichCommonEntity.getDefaultGsonBuilder;
 import static com.kolich.common.util.URLEncodingUtils.urlEncode;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.ParseException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
+import com.google.gson.GsonBuilder;
+import com.kolich.havalo.client.HavaloClientException;
+import com.kolich.havalo.client.entities.FileObject;
+import com.kolich.havalo.client.entities.KeyPair;
+import com.kolich.havalo.client.entities.ObjectList;
 import com.kolich.havalo.client.signing.HavaloAbstractSigner;
-import com.kolich.http.HttpConnector;
-import com.kolich.http.HttpConnectorResponse;
+import com.kolich.http.HttpClient4Closure;
+import com.kolich.http.HttpClient4Closure.HttpResponseEither;
 
 public final class HavaloClient extends HavaloAbstractService {
 		
@@ -58,91 +74,218 @@ public final class HavaloClient extends HavaloAbstractService {
 	
 	private static final String API_PARAM_STARTSWITH = "startsWith";
 	
-	public HavaloClient(HttpConnector connector,
+	private final HttpClient client_;
+	private final GsonBuilder gson_;
+	
+	public HavaloClient(HttpClient client,
 		HavaloAbstractSigner signer, String apiEndpoint) {
-		super(connector, signer, apiEndpoint);
+		super(signer, apiEndpoint);
+		client_ = client;
+		gson_ = getDefaultGsonBuilder();
 	}
 
-	public HttpConnectorResponse authenticate() {
-		return doMethod(new HttpPost(SLASH_STRING + API_ACTION_AUTHENTICATE));
+	public HttpResponseEither<Exception,KeyPair> authenticate() {
+		return new HttpClient4Closure<Exception,KeyPair>(client_) {
+			@Override
+			public void before(final HttpRequestBase request) {
+				signRequest(request);
+			}
+			@Override
+			public KeyPair success(final HttpSuccess success) throws Exception {
+				return gson_.create().fromJson(
+					responseToString(success.getResponse()),
+					KeyPair.class);
+			}
+			@Override
+			public Exception failure(final HttpFailure failure) {
+				return failure.getCause();
+			}
+		}.post(new HttpPost(SLASH_STRING + API_ACTION_AUTHENTICATE));
 	}
 	
-	public HttpConnectorResponse createRepository() {
-		return doMethod(new HttpPost(SLASH_STRING + API_ACTION_REPOSITORY));
+	public HttpResponseEither<Exception,KeyPair> createRepository() {
+		return new HttpClient4Closure<Exception,KeyPair>(client_) {
+			@Override
+			public void before(final HttpRequestBase request) {
+				signRequest(request);
+			}
+			@Override
+			public KeyPair success(final HttpSuccess success) throws Exception {
+				return gson_.create().fromJson(
+					responseToString(success.getResponse()),
+					KeyPair.class);
+			}
+			@Override
+			public Exception failure(final HttpFailure failure) {
+				return failure.getCause();
+			}
+		}.post(new HttpPost(SLASH_STRING + API_ACTION_REPOSITORY));
 	}
 	
-	public HttpConnectorResponse deleteRepository(final UUID repoId) {
-		return doMethod(new HttpDelete(SLASH_STRING + API_ACTION_REPOSITORY +
+	public HttpResponseEither<Exception,Integer> deleteRepository(final UUID repoId) {
+		return new HttpClient4Closure<Exception,Integer>(client_) {
+			@Override
+			public void before(final HttpRequestBase request) {
+				signRequest(request);
+			}
+			@Override
+			public Integer success(final HttpSuccess success) {
+				return success.getResponse().getStatusLine().getStatusCode();
+			}
+			@Override
+			public Exception failure(final HttpFailure failure) {
+				return failure.getCause();
+			}
+		}.delete(new HttpDelete(SLASH_STRING + API_ACTION_REPOSITORY +
 			SLASH_STRING + repoId));
 	}
 	
-	public HttpConnectorResponse listObjects(final String... path) {
-		final List<NameValuePair> params = new ArrayList<NameValuePair>();
-		if(path != null && path.length > 0) {
-			params.add(new BasicNameValuePair(API_PARAM_STARTSWITH,
-				varargsToPrefixString(path)));
-		}
-		final HttpGet get = new HttpGet(SLASH_STRING +
-			API_ACTION_REPOSITORY + QUERY_STRING +
-			URLEncodedUtils.format(params, UTF_8));
-		return doMethod(get);
+	public HttpResponseEither<Exception,ObjectList> listObjects(final String... path) {
+		return new HttpClient4Closure<Exception,ObjectList>(client_) {
+			@Override
+			public void before(final HttpRequestBase request) {
+				final List<NameValuePair> params = new ArrayList<NameValuePair>();
+				if(path != null && path.length > 0) {
+					params.add(new BasicNameValuePair(API_PARAM_STARTSWITH,
+						varargsToPrefixString(path)));
+				}
+				// Update the URI to include the "?query=" parameters.
+				request.setURI(URI.create(request.getURI().toString() +
+					QUERY_STRING + URLEncodedUtils.format(params, UTF_8)));
+				signRequest(request);
+			}
+			@Override
+			public ObjectList success(final HttpSuccess success) throws Exception {
+				return gson_.create().fromJson(
+					responseToString(success.getResponse()),
+					ObjectList.class);
+			}
+			@Override
+			public Exception failure(final HttpFailure failure) {
+				return failure.getCause();
+			}
+		}.get(new HttpGet(SLASH_STRING + API_ACTION_REPOSITORY));
 	}
 	
-	public HttpConnectorResponse listObjects() {
+	public HttpResponseEither<Exception,ObjectList> listObjects() {
 		return listObjects((String[])null);
 	}
 	
-	public HttpConnectorResponse getObject(final String... path) {
-		final HttpGet get = new HttpGet(SLASH_STRING +
-			API_ACTION_OBJECT + SLASH_STRING +
-			urlEncode(varargsToPrefixString(path)));
-		return doMethod(get);
+	public HttpResponseEither<Exception,Long> getObject(
+		final OutputStream destination, final String... path) {
+		return new HttpClient4Closure<Exception,Long>(client_) {
+			@Override
+			public void before(final HttpRequestBase request) {
+				signRequest(request);
+			}
+			@Override
+			public Long success(final HttpSuccess success) throws Exception {
+				return IOUtils.copyLarge(
+					success.getResponse().getEntity().getContent(),
+					destination);
+			}
+			@Override
+			public Exception failure(final HttpFailure failure) {
+				return failure.getCause();
+			}
+		}.get(new HttpGet(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
+			urlEncode(varargsToPrefixString(path))));
 	}
 	
-	public HttpConnectorResponse getObjectMetaData(final String... path) {
-		final HttpHead head = new HttpHead(SLASH_STRING +
-			API_ACTION_OBJECT + SLASH_STRING +
-			urlEncode(varargsToPrefixString(path)));
-		return doMethod(head);
-	}
-	
-	public HttpConnectorResponse putObject(final InputStream input,
-		final long contentLength, final Header[] headers,
+	public HttpResponseEither<Exception,List<Header>> getObjectMetaData(
 		final String... path) {
-		final HttpPut put = new HttpPut(SLASH_STRING +
-			API_ACTION_OBJECT + SLASH_STRING +
-			urlEncode(varargsToPrefixString(path)));
-		if(headers != null) {
-			put.setHeaders(headers);
-		}
-		put.setEntity(new InputStreamEntity(input, contentLength));
-		return doMethod(put);
+		return new HttpClient4Closure<Exception,List<Header>>(client_) {
+			@Override
+			public void before(final HttpRequestBase request) {
+				signRequest(request);
+			}
+			@Override
+			public List<Header> success(final HttpSuccess success) throws Exception {
+				return Arrays.asList(success.getResponse().getAllHeaders());
+			}
+			@Override
+			public Exception failure(final HttpFailure failure) {
+				return failure.getCause();
+			}
+		}.head(new HttpHead(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
+			urlEncode(varargsToPrefixString(path))));
+	}
+	
+	public HttpResponseEither<Exception,FileObject> putObject(
+		final InputStream input, final long contentLength,
+		final Header[] headers, final String... path) {
+		return new HttpClient4Closure<Exception,FileObject>(client_) {
+			@Override
+			public void before(final HttpRequestBase request) {
+				if(headers != null) {
+					request.setHeaders(headers);
+				}
+				((HttpPut)request).setEntity(new InputStreamEntity(input,
+					contentLength));
+				signRequest(request);
+			}
+			@Override
+			public FileObject success(final HttpSuccess success) throws Exception {
+				return gson_.create().fromJson(
+					responseToString(success.getResponse()),
+					FileObject.class);
+			}
+			@Override
+			public Exception failure(final HttpFailure failure) {
+				return failure.getCause();
+			}
+		}.put(new HttpPut(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
+			urlEncode(varargsToPrefixString(path))));
 	}
 			
-	public HttpConnectorResponse putObject(final byte[] input,
-		final Header[] headers, final String... path) {
+	public HttpResponseEither<Exception,FileObject> putObject(
+		final byte[] input, final Header[] headers, final String... path) {
 		final InputStream is = new ByteArrayInputStream(input);
 		return putObject(is, (long)input.length, headers, path);
 	}
 	
-	public HttpConnectorResponse putObject(final byte[] input,
-		final String... path) {
+	public HttpResponseEither<Exception,FileObject> putObject(
+		final byte[] input, final String... path) {
 		return putObject(input, null, path);
 	}
 		
-	public HttpConnectorResponse deleteObject(final Header[] headers,
-		final String... path) {
-		final HttpDelete delete = new HttpDelete(SLASH_STRING +
-			API_ACTION_OBJECT + SLASH_STRING +
-			urlEncode(varargsToPrefixString(path)));
-		if(headers != null) {
-			delete.setHeaders(headers);
-		}
-		return doMethod(delete);
+	public HttpResponseEither<Exception,Integer> deleteObject(
+		final Header[] headers, final String... path) {
+		return new HttpClient4Closure<Exception,Integer>(client_) {
+			@Override
+			public void before(final HttpRequestBase request) {
+				if(headers != null) {
+					request.setHeaders(headers);
+				}
+				signRequest(request);
+			}
+			@Override
+			public Integer success(final HttpSuccess success) {
+				return success.getResponse().getStatusLine().getStatusCode();
+			}
+			@Override
+			public Exception failure(final HttpFailure failure) {
+				return failure.getCause();
+			}
+		}.delete(new HttpDelete(SLASH_STRING + API_ACTION_OBJECT +
+			SLASH_STRING + urlEncode(varargsToPrefixString(path))));
 	}
 	
-	public HttpConnectorResponse deleteObject(final String... path) {
+	public HttpResponseEither<Exception,Integer> deleteObject(
+		final String... path) {
 		return deleteObject(null, path);
+	}
+	
+	private static final String responseToString(final HttpResponse response) {
+		try {
+			return EntityUtils.toString(response.getEntity(), UTF_8);
+		} catch (ParseException e) {
+			throw new HavaloClientException("Failed to parse entity to " +
+				"String.", e);
+		} catch (IOException e) {
+			throw new HavaloClientException("Failed to parse entity to " +
+				"String.", e);
+		}
 	}
 
 }

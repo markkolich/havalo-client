@@ -41,8 +41,6 @@ import org.apache.http.client.methods.HttpRequestBase;
 
 import com.kolich.havalo.client.HavaloClientException;
 import com.kolich.havalo.client.signing.HavaloAbstractSigner;
-import com.kolich.http.HttpConnector;
-import com.kolich.http.HttpConnectorResponse;
 
 public abstract class HavaloAbstractService {
 	
@@ -55,42 +53,35 @@ public abstract class HavaloAbstractService {
 	protected static final String EMPTY_STRING = "";
 	protected static final String QUERY_STRING = "?";
 	protected static final String DOT_STRING = ".";
-	
-	private HttpConnector connector_;
-	private HavaloAbstractSigner signer_;
+		
+	protected final HavaloAbstractSigner signer_;
 	
 	/**
 	 * The Havalo API endpoint that this service communicates with.
 	 */
-	private URI apiEndpoint_;
+	protected final URI apiEndpoint_;
 	
-	public HavaloAbstractService(HttpConnector connector,
-		HavaloAbstractSigner signer, String apiEndpoint) {
-		checkNotNull(connector, "The connector cannot be null!");
+	public HavaloAbstractService(HavaloAbstractSigner signer, String apiEndpoint) {
 		checkNotNull(signer, "The signer cannot be null!");
 		checkNotNull(apiEndpoint, "The service client API endpoint cannot " +
 			"be null!");
-		connector_ = connector;
 		signer_ = signer;
 		apiEndpoint_ = URI.create(apiEndpoint);
 	}
 	
 	/**
-	 * Prepares, signs, then executes the request.
+	 * Prepares and signs the request.
 	 * @param request the request object
 	 * @return the {@link HavaloHttpResponse} response assuming the
 	 * request was successful. If the request was not successful, then
 	 * an exception will be thrown.
 	 */
-	protected final HttpConnectorResponse doMethod(final HttpRequestBase request) {
+	protected final void signRequest(final HttpRequestBase request) {
 		checkNotNull(request, "Request cannot be null!");
 		// Compute the final endpoint for the request and set it.
 		request.setURI(getFinalEndpoint(request));
 		// Sign the request using an appropriate request signer.		
 		signer_.signHttpRequest(request);
-		// Actually send the request using our defined HTTP connector
-		// and return the response.		
-		return connector_.doMethod(request);
 	}
 	
 	private final URI getFinalEndpoint(final HttpRequestBase request) {
