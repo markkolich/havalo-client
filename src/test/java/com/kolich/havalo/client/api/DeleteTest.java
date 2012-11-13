@@ -26,11 +26,10 @@
 
 package com.kolich.havalo.client.api;
 
-import static com.kolich.http.HttpConnectorResponse.consumeQuietly;
 import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
@@ -38,7 +37,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.kolich.havalo.client.HavaloClientTestCase;
-import com.kolich.http.HttpConnectorResponse;
+import com.kolich.havalo.client.entities.FileObject;
+import com.kolich.http.HttpClient4Closure.HttpFailure;
+import com.kolich.http.HttpClient4Closure.HttpResponseEither;
 
 public class DeleteTest extends HavaloClientTestCase {
 	
@@ -50,51 +51,37 @@ public class DeleteTest extends HavaloClientTestCase {
 	
 	@Before
 	public void setup() {
-		HttpConnectorResponse response = null;
-		try {
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+		final HttpResponseEither<HttpFailure,FileObject> response =
+			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				"test", "object.json");
-			assertTrue("Failed to PUT sample object, response code: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-		} finally {
-			consumeQuietly(response);
-		}
+		assertTrue("Failed to PUT sample object.", response.success());		
 	}
 	
 	@After
 	public void teardown() {
-		HttpConnectorResponse response = null;
-		try {
-			// Ignore errors, if this delete fails, whatever it's part of a
-			// local tear down for this DELETE test case.
-			response = client_.deleteObject("test", "object.json");
-		} finally {
-			consumeQuietly(response);
-		}
+		// Ignore errors, if this delete fails, whatever it's part of a
+		// local tear down for this DELETE test case.
+		client_.deleteObject("test", "object.json");
 	}
 
 	@Test
 	public void delete() throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			response = client_.deleteObject("test", "object.json");
-			assertTrue("Failed to DELETE sample object, response code: " +
-				response.getStatus(), response.getStatus() == SC_NO_CONTENT);
-		} finally {
-			consumeQuietly(response);
-		}
+		final HttpResponseEither<HttpFailure,Integer> response =
+			client_.deleteObject("test", "object.json");
+		assertTrue("Failed to DELETE sample object.",
+			response.success());
+		assertTrue("Failed to DELETE sample object, response code: " +
+			response.right(), response.right() == SC_NO_CONTENT);
 	}
 	
 	@Test
 	public void deleteNotFound() throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			response = client_.deleteObject("totalbougusobject.jpg");
-			assertTrue("Deletion status of non-existent object wasn't 404",
-				response.getStatus() == SC_NOT_FOUND);
-		} finally {
-			consumeQuietly(response);
-		}
+		final HttpResponseEither<HttpFailure,Integer> response =
+			client_.deleteObject("totalbougusobject.jpg");
+		assertFalse("Deletion status of non-existent object was successful?",
+			response.success());
+		assertTrue("Deletion status of non-existent object wasn't 404",
+			response.left().getStatusCode() == SC_NOT_FOUND);
 	}
 		
 }

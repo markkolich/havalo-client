@@ -35,7 +35,7 @@ import com.kolich.havalo.client.signing.HavaloAbstractSigner;
 import com.kolich.havalo.client.signing.algorithms.HMACSHA256Signer;
 import com.kolich.http.KolichDefaultHttpClient.KolichHttpClientFactory;
 
-public abstract class HavaloClientTestCase extends HavaloClientBaseTest {
+public abstract class HavaloClientTestCase {
 	
 	private static final String HAVALO_API_URL_PROPERTY = "havalo.apiUrl";
 	private static final String HAVALO_ACCESS_KEY_PROPERTY = "havalo.key";

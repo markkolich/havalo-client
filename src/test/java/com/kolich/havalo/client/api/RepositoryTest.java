@@ -26,27 +26,23 @@
 
 package com.kolich.havalo.client.api;
 
-import static com.kolich.common.DefaultCharacterEncoding.UTF_8;
-import static com.kolich.http.HttpConnectorResponse.consumeQuietly;
 import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 
 import com.kolich.havalo.client.HavaloClientTestCase;
+import com.kolich.havalo.client.entities.FileObject;
 import com.kolich.havalo.client.entities.KeyPair;
 import com.kolich.havalo.client.entities.ObjectList;
-import com.kolich.http.HttpConnectorResponse;
+import com.kolich.http.HttpClient4Closure.HttpFailure;
+import com.kolich.http.HttpClient4Closure.HttpResponseEither;
 
 public class RepositoryTest extends HavaloClientTestCase {
 	
@@ -58,126 +54,86 @@ public class RepositoryTest extends HavaloClientTestCase {
 	
 	@Test
 	public void createAndDeleteRepository() throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			response = client_.createRepository();
-			assertTrue("Failed to create repository: " +
-				response.getStatus(), response.getStatus() == SC_CREATED);
-			final KeyPair kp = gson_.fromJson(EntityUtils.toString(
-				response.getEntity(), UTF_8), KeyPair.class);
-			//System.out.println(kp.getKey().toString() + " " + kp.getSecret());
-			consumeQuietly(response);
-			response = client_.deleteRepository(kp.getKey());
-			assertTrue("Failed to delete repository: " +
-				response.getStatus(), response.getStatus() == SC_NO_CONTENT);
-		} finally {
-			consumeQuietly(response);
-		}
+		// Create a sample repository
+		final HttpResponseEither<HttpFailure,KeyPair> create =
+			client_.createRepository();
+		assertTrue("Failed to create repository.", create.success());
+		// Tear down, delete it
+		final HttpResponseEither<HttpFailure,Integer> delete =
+			client_.deleteRepository(create.right().getKey());
+		assertTrue("Failed to delete repository.", delete.success());
 	}
 	
 	@Test
 	public void deleteNonExistentRepository() throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			response = client_.deleteRepository(UUID.randomUUID());
-			assertTrue("Uh, successfully deleted non-existent repository?: " +
-				response.getStatus(), response.getStatus() == SC_NOT_FOUND);
-		} finally {
-			consumeQuietly(response);
-		}
+		// Delete a non-existent repository, should fail.
+		final HttpResponseEither<HttpFailure,Integer> delete =
+			client_.deleteRepository(UUID.randomUUID());
+		assertFalse("Uh, successfully deleted non-existent repository?",
+			delete.success());
 	}
 	
 	@Test
 	public void listObjects() throws Exception {
-		HttpConnectorResponse response = null;
-		ObjectList list = null;
-		try {
-			// PUT some sample objects with predictable names
-			putSampleObjects();
-			// List ALL objects in the repo
-			list = listObjects((String[])null);
-			// Validate that the number of objects we got back match what
-			// we put into the repo
-			assertTrue("Object count did not match",
-				list.getObjectList().size() == 3);
-			// Only list objects that start with "randomness" (this shouldn't
-			// match anything)
-			list = listObjects(Long.toString(System.currentTimeMillis()),
-				"random.bin");
-			assertTrue("Object count was not zero (empty)",
-				list.getObjectList().size() == 0);
-			list = listObjects("foo");
-			assertTrue("Object count for startsWith='foo' was not 2",
-				list.getObjectList().size() == 2);
-			list = listObjects("foobar", "bar");
-			assertTrue("Object count for startsWith='foobar/bar' was not 1",
-				list.getObjectList().size() == 1);
-			// DELETE all sample objects
-			deleteSampleObjects();
-		} finally {
-			consumeQuietly(response);
-		}
+		// PUT some sample objects with predictable names
+		putSampleObjects();
+		// List ALL objects in the repo
+		ObjectList list = listObjects((String[])null);
+		// Validate that the number of objects we got back match what
+		// we put into the repo
+		assertTrue("Object count did not match",
+			list.getObjectList().size() == 3);
+		// Only list objects that start with "randomness" (this shouldn't
+		// match anything)
+		list = listObjects(Long.toString(System.currentTimeMillis()),
+			"random.index");
+		assertTrue("Object count was not zero (empty)",
+			list.getObjectList().size() == 0);
+		// Should be (2) objects that start with "foo"
+		list = listObjects("foo");
+		assertTrue("Object count for startsWith='foo' was not 2",
+			list.getObjectList().size() == 2);
+		// Should be (1) object that starts with "foobar/bar"
+		list = listObjects("foobar", "bar");
+		assertTrue("Object count for startsWith='foobar/bar' was not 1",
+			list.getObjectList().size() == 1);
+		// DELETE all sample objects
+		deleteSampleObjects();
 	}
 	
-	private void putSampleObjects() {
-		HttpConnectorResponse response = null;
-		try {
-			// PUT some sample objects with predictable names
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
-				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
-					"json", "object");
-			assertTrue("Failed to put sample object: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-			consumeQuietly(response);
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
-				new Header[]{new BasicHeader(CONTENT_TYPE, "text/plain")},
-					"foo", "bar.json");
-			assertTrue("Failed to put sample object: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-			consumeQuietly(response);
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
-				new Header[]{new BasicHeader(CONTENT_TYPE, "image/gif")},
-					"foobar", "bar.gif");
-			assertTrue("Failed to put sample object: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-			consumeQuietly(response);
-		} finally {
-			consumeQuietly(response);
-		}
+	private final void putSampleObjects() {
+		HttpResponseEither<HttpFailure,FileObject> put = null;
+		// Sample objects
+		put = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+			new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
+				"json", "object");
+		assertTrue("Failed to put sample object #1.", put.success());
+		put = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+			new Header[]{new BasicHeader(CONTENT_TYPE, "text/plain")},
+				"foo", "bar.json");
+		assertTrue("Failed to put sample object #2.", put.success());
+		put = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+			new Header[]{new BasicHeader(CONTENT_TYPE, "image/gif")},
+				"foobar", "bar.gif");
+		assertTrue("Failed to put sample object #3.", put.success());
 	}
 	
-	private ObjectList listObjects(final String... path) throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			response = client_.listObjects(path);
-			assertTrue("Failed to list objects in repository: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-			return gson_.fromJson(EntityUtils.toString(response.getEntity(),
-				UTF_8), ObjectList.class);
-		} finally {
-			consumeQuietly(response);
-		}
+	private final ObjectList listObjects(final String... path) throws Exception {
+		HttpResponseEither<HttpFailure, ObjectList> list =
+			client_.listObjects(path);
+		assertTrue("Failed to list objects in repository.", list.success());
+		return list.right();
 	}
 	
-	private void deleteSampleObjects() {
-		HttpConnectorResponse response = null;
-		try {
-			// Tear down
-			response = client_.deleteObject("json", "object");
-			assertTrue("Failed to DELETE sample object: " +
-				response.getStatus(), response.getStatus() == SC_NO_CONTENT);
-			consumeQuietly(response);
-			response = client_.deleteObject("foo", "bar.json");
-			assertTrue("Failed to DELETE sample object: " +
-				response.getStatus(), response.getStatus() == SC_NO_CONTENT);
-			consumeQuietly(response);
-			response = client_.deleteObject("foobar", "bar.gif");
-			assertTrue("Failed to DELETE sample object: " +
-				response.getStatus(), response.getStatus() == SC_NO_CONTENT);
-			consumeQuietly(response);
-		} finally {
-			consumeQuietly(response);
-		}
+	private final void deleteSampleObjects() {
+		HttpResponseEither<HttpFailure,Integer> delete = null;
+		// Delete sample objects.
+		delete = client_.deleteObject("json", "object");
+		assertTrue("Failed to DELETE sample object #1.", delete.success());
+		delete = client_.deleteObject("foo", "bar.json");
+		assertTrue("Failed to DELETE sample object #2.", delete.success());
+		delete = client_.deleteObject("foobar", "bar.gif");
+		assertTrue("Failed to DELETE sample object #3.", delete.success());
 	}
 	
 }

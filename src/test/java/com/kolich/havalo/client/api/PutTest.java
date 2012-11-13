@@ -26,28 +26,30 @@
 
 package com.kolich.havalo.client.api;
 
-import static com.kolich.common.DefaultCharacterEncoding.UTF_8;
-import static com.kolich.http.HttpConnectorResponse.consumeQuietly;
 import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
+import static org.apache.commons.codec.binary.StringUtils.newStringUtf8;
 import static org.apache.commons.lang3.RandomStringUtils.randomAscii;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpHeaders.IF_MATCH;
 import static org.apache.http.HttpStatus.SC_CONFLICT;
-import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 
 import com.kolich.havalo.client.HavaloClientTestCase;
 import com.kolich.havalo.client.entities.FileObject;
-import com.kolich.http.HttpConnectorResponse;
+import com.kolich.http.HttpClient4Closure.HttpFailure;
+import com.kolich.http.HttpClient4Closure.HttpResponseEither;
 
 public class PutTest extends HavaloClientTestCase {
 	
@@ -60,182 +62,157 @@ public class PutTest extends HavaloClientTestCase {
 	
 	@Test
 	public void put() throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+		// PUT a sample object
+		final HttpResponseEither<HttpFailure,FileObject> put = 
+			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
-					"test", "jsonObject/hmm");
-			assertTrue("Failed to PUT sample object: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-			// Validate JSON deserialization
-			gson_.fromJson(EntityUtils.toString(response.getEntity(), UTF_8),
-				FileObject.class);
-			consumeQuietly(response);
-			// GET the object to make sure it actually worked.
-			response = client_.getObject("test", "jsonObject/hmm");
-			assertTrue("Failed to GET sample object after PUT: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-			final String received = EntityUtils.toString(response.getEntity(),
-				UTF_8);
-			assertTrue("Object received on GET did not match object " +
-				"sent on PUT (sent="+ SAMPLE_JSON_OBJECT + ", received=" +
-					received + ")", received.equals(SAMPLE_JSON_OBJECT));
-			consumeQuietly(response);
-			// Tear down
-			response = client_.deleteObject("test", "jsonObject/hmm");
-			assertTrue("Failed to DELETE sample object: " +
-				response.getStatus(), response.getStatus() == SC_NO_CONTENT);
-		} finally {
-			consumeQuietly(response);
-		}
+				"test", "jsonObject/hmm");
+		assertTrue("Failed to PUT sample object.", put.success());
+		// GET the object to make sure it actually worked.
+		final ByteArrayOutputStream os = new ByteArrayOutputStream();
+		final HttpResponseEither<HttpFailure,Long> get =
+			client_.getObject(os, "test", "jsonObject/hmm");
+		assertTrue("Failed to GET sample object after PUT.", get.success());
+		assertTrue("Failed to GET sample object after PUT -- empty object!?",
+			get.right() > 0L);
+		final String receivedString = newStringUtf8(os.toByteArray());
+		assertTrue("Object received on GET did not match object " +
+			"sent on PUT (sent="+ SAMPLE_JSON_OBJECT + ", received=" +
+				receivedString + ")", receivedString.equals(SAMPLE_JSON_OBJECT));
+		// Tear down
+		final HttpResponseEither<HttpFailure,Integer> delete = 
+			client_.deleteObject("test", "jsonObject/hmm");		
+		assertTrue("Failed to DELETE sample object.", delete.success());
 	}
 	
 	@Test
 	public void putLongName() throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			// Trying to stay under the default Tomcat maxHttpHeaderSize of 8KB
-			// http://stackoverflow.com/questions/6837505/setting-max-http-header-size-with-ajp-tomcat-6-0
-			// http://stackoverflow.com/questions/1730158/how-to-set-the-ajp-packet-size-in-tomcat
-			// Apparently the max header size in Jetty is less around 4KB
-			final String[] prefixes = getRandomPrefix(200);
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+		// Trying to stay under the default Tomcat maxHttpHeaderSize of 8KB
+		// http://stackoverflow.com/questions/6837505/setting-max-http-header-size-with-ajp-tomcat-6-0
+		// http://stackoverflow.com/questions/1730158/how-to-set-the-ajp-packet-size-in-tomcat
+		// Apparently the max header size in Jetty is less around 4KB
+		final String[] prefixes = getRandomPrefix(200);
+		// PUT a sample object
+		final HttpResponseEither<HttpFailure,FileObject> put = 
+			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 					prefixes);
-			assertTrue("Failed to PUT long sample object: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-			// Validate JSON deserialization
-			gson_.fromJson(EntityUtils.toString(response.getEntity(), UTF_8),
-				FileObject.class);
-			consumeQuietly(response);
-			// Tear down
-			response = client_.deleteObject(prefixes);
-			assertTrue("Failed to DELETE long sample object: " +
-				response.getStatus(), response.getStatus() == SC_NO_CONTENT);
-		} finally {
-			consumeQuietly(response);
-		}
+		assertTrue("Failed to PUT long sample object.", put.success());
+		// Tear down
+		final HttpResponseEither<HttpFailure,Integer> delete =
+			client_.deleteObject(prefixes);
+		assertTrue("Failed to DELETE long sample object.", delete.success());
+		assertTrue("Failed to DELETE long sample object -- bad response code",
+			delete.right() == SC_NO_CONTENT);
 	}
 	
 	@Test
 	public void putWithSpacesInName() throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			final String[] prefixes = new String[]{"   ////// ", "kewl",
-				"    should still totally work  ++++ ^^^^ && foobar"}; 
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+		final String[] prefixes = new String[]{"   ////// ", "kewl",
+			"  +++    !!//  should still totally work  ++++ ^^^^ && foobar"}; 
+		// PUT a sample object
+		final HttpResponseEither<HttpFailure,FileObject> put = 
+			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 					prefixes);
-			assertTrue("Failed to PUT object with crap in name: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-			// Validate JSON deserialization
-			gson_.fromJson(EntityUtils.toString(response.getEntity(), UTF_8),
-				FileObject.class);
-			consumeQuietly(response);
-			// Tear down
-			response = client_.deleteObject(prefixes);
-			assertTrue("Failed to DELETE object with crap in name: " +
-				response.getStatus(), response.getStatus() == SC_NO_CONTENT);
-		} finally {
-			consumeQuietly(response);
-		}
+		assertTrue("Failed to PUT object with crap in name.", put.success());
+		// Tear down
+		final HttpResponseEither<HttpFailure,Integer> delete =
+			client_.deleteObject(prefixes);
+		assertTrue("Failed to DELETE object with crap in name.",
+			delete.success());
+		assertTrue("Failed to DELETE object with crap in name -- bad " +
+			"response code", delete.right() == SC_NO_CONTENT);
 	}
 	
 	@Test
 	public void putNoName() throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+		// PUT a sample object
+		final HttpResponseEither<HttpFailure,FileObject> put = 
+			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 					"");
-			assertTrue("Failed to PUT object with no name: " +
-				response.getStatus(), response.getStatus() ==
-					SC_METHOD_NOT_ALLOWED);
-		} finally {
-			consumeQuietly(response);
-		}
+		assertFalse("Failed to PUT object with no name.", put.success());
+		// Expected 405
+		assertTrue("Failed to PUT object with no name -- bad " +
+			"response code", put.left().getStatusCode() == SC_METHOD_NOT_ALLOWED);
 	}
 	
 	@Test
 	public void putWithCorrectETag() throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			final String[] prefixes = getRandomPrefix(50);
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+		// PUT a sample object
+		final String[] prefixes = getRandomPrefix(50);
+		final HttpResponseEither<HttpFailure,FileObject> put =
+			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 					prefixes);
-			assertTrue("Failed to PUT sample object: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-			// Validate JSON deserialization
-			gson_.fromJson(EntityUtils.toString(response.getEntity(), UTF_8),
-				FileObject.class);			
-			// Extract the ETag HTTP response header from the PUT.
-			final String eTag = response.getHeaderValue(HttpHeaders.ETAG);			
-			assertNotNull("ETag header on PUT was null.", eTag);
-			consumeQuietly(response);
-			// Call HEAD on the object to fetch and validate its meta data.
-			response = client_.getObjectMetaData(prefixes);
-			// Validate that the eTag we sent in was returned with the response
-			// meta data on the HEAD request to the API.
-			assertTrue("Fetched Etag does not match ETag delivered on PUT",
-				response.getETag().equals(eTag));
-			consumeQuietly(response);
-			// Do another put with the correct If-Match ETag.
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+		assertTrue("Failed to PUT sample object.", put.success());
+		// Extract the eTag from the resulting PUT
+		final String eTag = put.right().getFirstHeader(HttpHeaders.ETAG);
+		assertNotNull("ETag header on PUT was null.", eTag);
+		// Call HEAD on the object to fetch and validate its meta data.
+		final HttpResponseEither<HttpFailure,List<Header>> head =
+			client_.getObjectMetaData(prefixes);
+		assertTrue("Failed to HEAD sample object.", head.success());
+		// Validate that the eTag we sent in was returned with the response
+		// meta data on the HEAD request to the API.
+		assertTrue("HEAD Fetched Etag does not match ETag delivered on PUT",
+			eTag.equals(getETagHeader(head.right())));
+		// Do another put with the correct If-Match ETag.
+		final HttpResponseEither<HttpFailure,FileObject> putETag =
+			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json"),
 					// Object in repo must match incoming ETag
 					new BasicHeader(IF_MATCH, eTag)},
 					prefixes);
-			assertTrue("Failed to PUT sample object with correct eTag: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-			// Validate JSON deserialization
-			gson_.fromJson(EntityUtils.toString(response.getEntity(), UTF_8),
-				FileObject.class);
-			consumeQuietly(response);
-			// Tear down
-			response = client_.deleteObject(prefixes);
-			assertTrue("Failed to DELETE long sample object: " +
-				response.getStatus(), response.getStatus() == SC_NO_CONTENT);
-		} finally {
-			consumeQuietly(response);
-		}
+		assertTrue("Failed to PUT sample object with correct eTag.",
+			putETag.success());
+		final HttpResponseEither<HttpFailure,Integer> delete =
+			client_.deleteObject(prefixes);
+		assertTrue("Failed to DELETE object with crap in name.",
+			delete.success());
+		assertTrue("Failed to DELETE object with crap in name -- bad " +
+			"response code", delete.right() == SC_NO_CONTENT);
 	}
 	
 	@Test
 	public void putWithConflictingETag() throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			final String[] prefixes = getRandomPrefix(50);
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+		// PUT a sample object
+		final String[] prefixes = getRandomPrefix(50);
+		final HttpResponseEither<HttpFailure,FileObject> put =
+			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 					prefixes);
-			assertTrue("Failed to PUT sample object: " + response.getStatus(),
-				response.getStatus() == SC_OK);
-			// Validate JSON deserialization
-			gson_.fromJson(EntityUtils.toString(response.getEntity(), UTF_8),
-				FileObject.class);
-			consumeQuietly(response);
-			// Extract the ETag HTTP response header from the PUT.
-			final String eTag = response.getHeaderValue(HttpHeaders.ETAG);
-			assertNotNull("ETag header on PUT was null.", eTag);
-			// Do another put with a totally wrong ETag in the If-Match
-			// request header (SHOULD FAIL).
-			response = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
+		assertTrue("Failed to PUT sample object.", put.success());
+		// Extract the eTag from the resulting PUT
+		final String eTag = put.right().getFirstHeader(HttpHeaders.ETAG);
+		assertNotNull("ETag header on PUT was null.", eTag);
+		// Call HEAD on the object to fetch and validate its meta data.
+		final HttpResponseEither<HttpFailure,List<Header>> head =
+			client_.getObjectMetaData(prefixes);
+		assertTrue("Failed to HEAD sample object.", head.success());
+		// Validate that the eTag we sent in was returned with the response
+		// meta data on the HEAD request to the API.
+		assertTrue("HEAD Fetched Etag does not match ETag delivered on PUT",
+			eTag.equals(getETagHeader(head.right())));
+		// Do another put with a totally wrong ETag in the If-Match
+		// request header (SHOULD FAIL).
+		final HttpResponseEither<HttpFailure,FileObject> putETag =
+			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json"),
 					// Totally non-sense ETag -- should fail.
 					new BasicHeader(IF_MATCH, "totallybogusetag")},
 					prefixes);
-			assertTrue("PUT with known bad ETag did not return a 409 " +
-				"Conflict as expected: " + response.getStatus(),
-					response.getStatus() == SC_CONFLICT);
-			consumeQuietly(response);
-			// Tear down
-			response = client_.deleteObject(prefixes);
-			assertTrue("Failed to DELETE long sample object: " +
-				response.getStatus(), response.getStatus() == SC_NO_CONTENT);
-		} finally {
-			consumeQuietly(response);
-		}
+		assertFalse("PUT with known bad ETag succeeded?", putETag.success());
+		assertTrue("PUT with known bad ETag did not return a 409 " +
+			"Conflict as expected.", putETag.left().getStatusCode() == SC_CONFLICT);
+		// Tear down
+		final HttpResponseEither<HttpFailure,Integer> delete =
+			client_.deleteObject(prefixes);
+		assertTrue("Failed to DELETE object with crap in name.",
+			delete.success());
+		assertTrue("Failed to DELETE object with crap in name -- bad " +
+			"response code", delete.right() == SC_NO_CONTENT);
 	}
 
 	private static final String[] getRandomPrefix(final int length) {
@@ -244,6 +221,15 @@ public class PutTest extends HavaloClientTestCase {
 			prefixes[i] = randomAscii(10);
 		}
 		return prefixes;
+	}
+	
+	private static final String getETagHeader(final List<Header> headers) {
+		for(final Header h : headers) {
+			if(h.getName().equals(HttpHeaders.ETAG)) {
+				return h.getValue();
+			}
+		}
+		return null;
 	}
 	
 }

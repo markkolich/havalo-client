@@ -26,14 +26,14 @@
 
 package com.kolich.havalo.client.api;
 
-import static com.kolich.http.HttpConnectorResponse.consumeQuietly;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 import com.kolich.havalo.client.HavaloClientTestCase;
-import com.kolich.http.HttpConnectorResponse;
+import com.kolich.havalo.client.entities.KeyPair;
+import com.kolich.http.HttpClient4Closure.HttpFailure;
+import com.kolich.http.HttpClient4Closure.HttpResponseEither;
 
 public class AuthenticateTest extends HavaloClientTestCase {
 	
@@ -43,14 +43,11 @@ public class AuthenticateTest extends HavaloClientTestCase {
 	
 	@Test
 	public void authenticate() throws Exception {
-		HttpConnectorResponse response = null;
-		try {
-			response = client_.authenticate();
-			assertTrue("Failed to POST authentication, response code: " +
-				response.getStatus(), response.getStatus() == SC_OK);
-		} finally {
-			consumeQuietly(response);
-		}
+		final HttpResponseEither<HttpFailure,KeyPair> response =
+			client_.authenticate();
+		assertTrue("Authentication failed, miserably.", response.success());
+		assertTrue("Did not return a valid KeyPair entity.",
+			response.right() != null);
 	}
 	
 }
