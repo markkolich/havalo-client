@@ -126,7 +126,7 @@ public final class HavaloClient extends HavaloAbstractService {
 				return gson_.create().fromJson(
 					responseToString(success.getResponse()),
 					KeyPair.class);
-			}			
+			}
 		}.post(new HttpPost(SLASH_STRING + API_ACTION_AUTHENTICATE));
 	}
 	
