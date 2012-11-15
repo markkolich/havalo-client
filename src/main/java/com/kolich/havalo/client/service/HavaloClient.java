@@ -89,9 +89,9 @@ public final class HavaloClient extends HavaloAbstractService {
 		gson_ = getDefaultGsonBuilder();
 	}
 	
-	private abstract class HavaloHttpClientClosure<T>
+	private abstract class HavaloHttpClient4Closure<T>
 		extends HttpClient4Closure<HttpFailure,T> {
-		public HavaloHttpClientClosure(final HttpClient client) {
+		public HavaloHttpClient4Closure(final HttpClient client) {
 			super(client);
 		}
 		@Override
@@ -113,7 +113,7 @@ public final class HavaloClient extends HavaloAbstractService {
 	}
 
 	public HttpResponseEither<HttpFailure,KeyPair> authenticate() {
-		return new HavaloHttpClientClosure<KeyPair>(client_) {
+		return new HavaloHttpClient4Closure<KeyPair>(client_) {
 			@Override
 			public boolean check(final int statusCode) {
 				// The POST of auth credentials is only successful when the
@@ -131,7 +131,7 @@ public final class HavaloClient extends HavaloAbstractService {
 	}
 	
 	public HttpResponseEither<HttpFailure,KeyPair> createRepository() {
-		return new HavaloHttpClientClosure<KeyPair>(client_) {
+		return new HavaloHttpClient4Closure<KeyPair>(client_) {
 			@Override
 			public boolean check(final int statusCode) {
 				// The POST of a repository is only successful when the
@@ -149,7 +149,7 @@ public final class HavaloClient extends HavaloAbstractService {
 	}
 	
 	public HttpResponseEither<HttpFailure,Integer> deleteRepository(final UUID repoId) {
-		return new HavaloHttpClientClosure<Integer>(client_) {
+		return new HavaloHttpClient4Closure<Integer>(client_) {
 			@Override
 			public boolean check(final int statusCode) {
 				// The DELETE of a repository is only successful when the
@@ -166,7 +166,7 @@ public final class HavaloClient extends HavaloAbstractService {
 	}
 	
 	public HttpResponseEither<HttpFailure,ObjectList> listObjects(final String... path) {
-		return new HavaloHttpClientClosure<ObjectList>(client_) {
+		return new HavaloHttpClient4Closure<ObjectList>(client_) {
 			@Override
 			public void before(final HttpRequestBase request) {
 				final List<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -201,7 +201,7 @@ public final class HavaloClient extends HavaloAbstractService {
 	
 	public HttpResponseEither<HttpFailure,Long> getObject(
 		final OutputStream destination, final String... path) {
-		return new HavaloHttpClientClosure<Long>(client_) {
+		return new HavaloHttpClient4Closure<Long>(client_) {
 			@Override
 			public boolean check(final int statusCode) {
 				// The GET of an object is only successful when the
@@ -221,7 +221,7 @@ public final class HavaloClient extends HavaloAbstractService {
 	
 	public HttpResponseEither<HttpFailure,List<Header>> getObjectMetaData(
 		final String... path) {
-		return new HavaloHttpClientClosure<List<Header>>(client_) {
+		return new HavaloHttpClient4Closure<List<Header>>(client_) {
 			@Override
 			public boolean check(final int statusCode) {
 				// The HEAD of an object is only successful when the
@@ -240,7 +240,7 @@ public final class HavaloClient extends HavaloAbstractService {
 	public HttpResponseEither<HttpFailure,FileObject> putObject(
 		final InputStream input, final long contentLength,
 		final Header[] headers, final String... path) {
-		return new HavaloHttpClientClosure<FileObject>(client_) {
+		return new HavaloHttpClient4Closure<FileObject>(client_) {
 			@Override
 			public void before(final HttpRequestBase request) {
 				if(headers != null) {
@@ -280,7 +280,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		
 	public HttpResponseEither<HttpFailure,Integer> deleteObject(
 		final Header[] headers, final String... path) {
-		return new HavaloHttpClientClosure<Integer>(client_) {
+		return new HavaloHttpClient4Closure<Integer>(client_) {
 			@Override
 			public void before(final HttpRequestBase request) {
 				if(headers != null) {
