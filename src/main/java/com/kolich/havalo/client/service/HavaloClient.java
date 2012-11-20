@@ -34,7 +34,6 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
@@ -47,7 +46,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -127,7 +125,7 @@ public final class HavaloClient extends HavaloAbstractService {
 					responseToString(success.getResponse()),
 					KeyPair.class);
 			}
-		}.post(new HttpPost(SLASH_STRING + API_ACTION_AUTHENTICATE));
+		}.request(new HttpPost(SLASH_STRING + API_ACTION_AUTHENTICATE));
 	}
 	
 	public HttpResponseEither<HttpFailure,KeyPair> createRepository() {
@@ -145,7 +143,7 @@ public final class HavaloClient extends HavaloAbstractService {
 					responseToString(success.getResponse()),
 					KeyPair.class);
 			}
-		}.post(new HttpPost(SLASH_STRING + API_ACTION_REPOSITORY));
+		}.request(new HttpPost(SLASH_STRING + API_ACTION_REPOSITORY));
 	}
 	
 	public HttpResponseEither<HttpFailure,Integer> deleteRepository(final UUID repoId) {
@@ -161,7 +159,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			public Integer success(final HttpSuccess success) {
 				return success.getResponse().getStatusLine().getStatusCode();
 			}
-		}.delete(new HttpDelete(SLASH_STRING + API_ACTION_REPOSITORY +
+		}.request(new HttpDelete(SLASH_STRING + API_ACTION_REPOSITORY +
 			SLASH_STRING + repoId));
 	}
 	
@@ -192,7 +190,7 @@ public final class HavaloClient extends HavaloAbstractService {
 					responseToString(success.getResponse()),
 					ObjectList.class);
 			}
-		}.get(new HttpGet(SLASH_STRING + API_ACTION_REPOSITORY));
+		}.request(new HttpGet(SLASH_STRING + API_ACTION_REPOSITORY));
 	}
 	
 	public HttpResponseEither<HttpFailure,ObjectList> listObjects() {
@@ -215,7 +213,7 @@ public final class HavaloClient extends HavaloAbstractService {
 					success.getResponse().getEntity().getContent(),
 					destination);
 			}
-		}.get(new HttpGet(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
+		}.request(new HttpGet(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
 			urlEncode(varargsToPrefixString(path))));
 	}
 	
@@ -233,7 +231,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			public List<Header> success(final HttpSuccess success) {
 				return Arrays.asList(success.getResponse().getAllHeaders());
 			}
-		}.head(new HttpHead(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
+		}.request(new HttpHead(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
 			urlEncode(varargsToPrefixString(path))));
 	}
 	
@@ -263,7 +261,7 @@ public final class HavaloClient extends HavaloAbstractService {
 					responseToString(success.getResponse()),
 					FileObject.class);
 			}
-		}.put(new HttpPut(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
+		}.request(new HttpPut(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
 			urlEncode(varargsToPrefixString(path))));
 	}
 			
@@ -299,7 +297,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			public Integer success(final HttpSuccess success) {
 				return success.getResponse().getStatusLine().getStatusCode();
 			}
-		}.delete(new HttpDelete(SLASH_STRING + API_ACTION_OBJECT +
+		}.request(new HttpDelete(SLASH_STRING + API_ACTION_OBJECT +
 			SLASH_STRING + urlEncode(varargsToPrefixString(path))));
 	}
 	
@@ -311,10 +309,7 @@ public final class HavaloClient extends HavaloAbstractService {
 	private static final String responseToString(final HttpResponse response) {
 		try {
 			return EntityUtils.toString(response.getEntity(), UTF_8);
-		} catch (ParseException e) {
-			throw new HavaloClientException("Failed to parse entity to " +
-				"String.", e);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new HavaloClientException("Failed to parse entity to " +
 				"String.", e);
 		}
