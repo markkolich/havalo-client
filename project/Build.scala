@@ -61,13 +61,13 @@ object Resolvers {
 
 }
 
-object Spring extends Build {
+object HavaloClient extends Build {
 
   import Dependencies._
   import Resolvers._
 
   private val aName = "havalo-client"
-  private val aVer = "0.0.5"
+  private val aVer = "0.0.6"
   private val aOrg = "com.kolich"
 
   lazy val havaloClient: Project = Project(

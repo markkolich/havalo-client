@@ -68,6 +68,7 @@ import com.kolich.havalo.client.signing.HavaloAbstractSigner;
 import com.kolich.http.HttpClient4Closure;
 import com.kolich.http.HttpClient4Closure.HttpFailure;
 import com.kolich.http.HttpClient4Closure.HttpResponseEither;
+import com.kolich.http.HttpClient4Closure.HttpSuccess;
 
 public final class HavaloClient extends HavaloAbstractService {
 		
@@ -86,7 +87,11 @@ public final class HavaloClient extends HavaloAbstractService {
 		client_ = client;
 		gson_ = getDefaultGsonBuilder();
 	}
-	
+
+	public interface CustomEntityConverter<T> {
+		public T convert(final HttpSuccess success) throws Exception;
+	}
+
 	private abstract class HavaloHttpClient4Closure<T>
 		extends HttpClient4Closure<HttpFailure,T> {
 		public HavaloHttpClient4Closure(final HttpClient client) {
@@ -199,7 +204,19 @@ public final class HavaloClient extends HavaloAbstractService {
 	
 	public HttpResponseEither<HttpFailure,Long> getObject(
 		final OutputStream destination, final String... path) {
-		return new HavaloHttpClient4Closure<Long>(client_) {
+		return getObject(new CustomEntityConverter<Long>() {
+			@Override
+			public Long convert(final HttpSuccess success) throws Exception {
+				return IOUtils.copyLarge(
+					success.getResponse().getEntity().getContent(),
+					destination);
+			}
+		}, path);
+	}
+
+	public <T> HttpResponseEither<HttpFailure,T> getObject(
+		final CustomEntityConverter<T> converter, final String... path) {
+		return new HavaloHttpClient4Closure<T>(client_) {
 			@Override
 			public boolean check(final int statusCode) {
 				// The GET of an object is only successful when the
@@ -208,15 +225,13 @@ public final class HavaloClient extends HavaloAbstractService {
 				return statusCode == SC_OK;
 			}
 			@Override
-			public Long success(final HttpSuccess success) throws Exception {
-				return IOUtils.copyLarge(
-					success.getResponse().getEntity().getContent(),
-					destination);
+			public T success(final HttpSuccess success) throws Exception {
+				return converter.convert(success);
 			}
 		}.request(new HttpGet(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
 			urlEncode(varargsToPrefixString(path))));
 	}
-	
+
 	public HttpResponseEither<HttpFailure,List<Header>> getObjectMetaData(
 		final String... path) {
 		return new HavaloHttpClient4Closure<List<Header>>(client_) {
