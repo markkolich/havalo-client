@@ -45,14 +45,9 @@ public final class ObjectList implements Serializable {
 	}
 	
 	public Set<FileObject> getObjectList() {
-		return objects_;
+		return new TreeSet<FileObject>(objects_);
 	}
 	
-	public ObjectList setObjectList(Set<FileObject> objects) {
-		objects_ = objects;
-		return this;
-	}
-
 	// Straight from Eclipse
 	@Override
 	public int hashCode() {

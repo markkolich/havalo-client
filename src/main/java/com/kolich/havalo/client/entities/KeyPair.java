@@ -36,35 +36,20 @@ public final class KeyPair implements Serializable {
 	private static final long serialVersionUID = 6048441078878191903L;
 
 	@SerializedName("key")
-	private UUID key_;
+	private UUID key_; // UUID's are immutable
 	
 	@SerializedName("secret")
 	private String secret_;
 			
 	// For GSON
 	public KeyPair() {}
-		
+	
 	public UUID getKey() {
 		return key_;
 	}
 	
-	public KeyPair setKey(UUID key) {
-		key_ = key;
-		return this;
-	}
-	
-	public KeyPair setKey(String key) {
-		key_ = UUID.fromString(key);
-		return this;
-	}
-
 	public String getSecret() {
 		return secret_;
-	}
-
-	public KeyPair setSecret(String secret) {
-		secret_ = secret;
-		return this;
 	}
 
 	// Straight from Eclipse

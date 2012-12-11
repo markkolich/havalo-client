@@ -51,28 +51,18 @@ public final class FileObject implements Serializable {
 	public String getName() {
 		return name_;
 	}
-	
-	public FileObject setName(String name) {
-		name_ = name;
-		return this;
+		
+	public Map<String, List<String>> getAllHeaders() {
+		return new LinkedHashMap<String, List<String>>(headers_);
 	}
-	
-	public Map<String, List<String>> getHeaders() {
-		return headers_;
-	}
-	
-	public FileObject setHeaders(Map<String, List<String>> headers) {
-		headers_ = headers;
-		return this;
-	}
-	
-	public List<String> getHeaders(String name) {
+		
+	public List<String> getHeader(String name) {
 		return headers_.get(name);
 	}
 	
 	public String getFirstHeader(String name) {
 		final List<String> headers;
-		if((headers = getHeaders(name)) != null) {
+		if((headers = getHeader(name)) != null) {
 			return headers.get(0);
 		}
 		return null;
