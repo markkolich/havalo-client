@@ -34,7 +34,7 @@ object Dependencies {
   // Internal dependencies
 
   private val kolichCommon = "com.kolich" % "kolich-common" % "0.0.4" % "compile"
-  private val kolichHttpClient4Closure = "com.kolich" % "kolich-httpclient4-closure" % "0.0.4" % "compile"
+  private val kolichHttpClient4Closure = "com.kolich" % "kolich-httpclient4-closure" % "0.0.5" % "compile"
 
   // External dependencies
 

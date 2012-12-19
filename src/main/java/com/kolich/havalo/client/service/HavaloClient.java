@@ -59,16 +59,20 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.kolich.havalo.client.HavaloClientException;
 import com.kolich.havalo.client.entities.FileObject;
 import com.kolich.havalo.client.entities.KeyPair;
 import com.kolich.havalo.client.entities.ObjectList;
 import com.kolich.havalo.client.signing.HavaloAbstractSigner;
-import com.kolich.http.HttpClient4Closure;
 import com.kolich.http.HttpClient4Closure.HttpFailure;
 import com.kolich.http.HttpClient4Closure.HttpResponseEither;
 import com.kolich.http.HttpClient4Closure.HttpSuccess;
+import com.kolich.http.helpers.GsonOrHttpFailureClosure;
+import com.kolich.http.helpers.StatusCodeAndHeadersOnlyClosure;
+import com.kolich.http.helpers.StatusCodeOrHttpFailureClosure;
+import com.kolich.http.helpers.definitions.CustomEntityConverter;
 
 public final class HavaloClient extends HavaloAbstractService {
 		
@@ -88,13 +92,25 @@ public final class HavaloClient extends HavaloAbstractService {
 		gson_ = getDefaultGsonBuilder();
 	}
 
-	public interface CustomEntityConverter<T> {
-		public T convert(final HttpSuccess success) throws Exception;
+	private abstract class HavaloGsonClosure<T> extends GsonOrHttpFailureClosure<T> {
+		public HavaloGsonClosure(final HttpClient client, final Gson gson,
+			final Class<T> clazz) {
+			super(client, gson, clazz);
+		}
+		@Override
+		public void before(final HttpRequestBase request) {
+			signRequest(request);
+		}
+		@Override
+		public boolean check(final HttpResponse response,
+			final HttpContext context) {
+			return check(response.getStatusLine().getStatusCode());
+		}
+		public abstract boolean check(final int statusCode);
 	}
-
-	private abstract class HavaloHttpClient4Closure<T>
-		extends HttpClient4Closure<HttpFailure,T> {
-		public HavaloHttpClient4Closure(final HttpClient client) {
+	
+	private abstract class HavaloStatusCodeClosure extends StatusCodeOrHttpFailureClosure {
+		public HavaloStatusCodeClosure(final HttpClient client) {
 			super(client);
 		}
 		@Override
@@ -107,16 +123,27 @@ public final class HavaloClient extends HavaloAbstractService {
 			return check(response.getStatusLine().getStatusCode());
 		}
 		public abstract boolean check(final int statusCode);
-		@Override
-		public abstract T success(final HttpSuccess success) throws Exception;
-		@Override
-		public HttpFailure failure(final HttpFailure failure) {
-			return failure;
+	}
+	
+	private abstract class HavaloHeadersClosure extends StatusCodeAndHeadersOnlyClosure {
+		public HavaloHeadersClosure(final HttpClient client) {
+			super(client);
 		}
+		@Override
+		public void before(final HttpRequestBase request) {
+			signRequest(request);
+		}
+		@Override
+		public boolean check(final HttpResponse response,
+			final HttpContext context) {
+			return check(response.getStatusLine().getStatusCode());
+		}
+		public abstract boolean check(final int statusCode);
 	}
 
 	public HttpResponseEither<HttpFailure,KeyPair> authenticate() {
-		return new HavaloHttpClient4Closure<KeyPair>(client_) {
+		return new HavaloGsonClosure<KeyPair>(client_, gson_.create(),
+			KeyPair.class) {
 			@Override
 			public boolean check(final int statusCode) {
 				// The POST of auth credentials is only successful when the
@@ -124,17 +151,12 @@ public final class HavaloClient extends HavaloAbstractService {
 				// code on the response is failure.
 				return statusCode == SC_OK;
 			}
-			@Override
-			public KeyPair success(final HttpSuccess success) throws Exception {
-				return gson_.create().fromJson(
-					responseToString(success.getResponse()),
-					KeyPair.class);
-			}
 		}.request(new HttpPost(SLASH_STRING + API_ACTION_AUTHENTICATE));
 	}
 	
 	public HttpResponseEither<HttpFailure,KeyPair> createRepository() {
-		return new HavaloHttpClient4Closure<KeyPair>(client_) {
+		return new HavaloGsonClosure<KeyPair>(client_, gson_.create(),
+			KeyPair.class) {
 			@Override
 			public boolean check(final int statusCode) {
 				// The POST of a repository is only successful when the
@@ -142,17 +164,11 @@ public final class HavaloClient extends HavaloAbstractService {
 				// code on the response is failure.
 				return statusCode == SC_CREATED;
 			}
-			@Override
-			public KeyPair success(final HttpSuccess success) throws Exception {
-				return gson_.create().fromJson(
-					responseToString(success.getResponse()),
-					KeyPair.class);
-			}
 		}.request(new HttpPost(SLASH_STRING + API_ACTION_REPOSITORY));
 	}
 	
 	public HttpResponseEither<HttpFailure,Integer> deleteRepository(final UUID repoId) {
-		return new HavaloHttpClient4Closure<Integer>(client_) {
+		return new HavaloStatusCodeClosure(client_) {
 			@Override
 			public boolean check(final int statusCode) {
 				// The DELETE of a repository is only successful when the
@@ -160,16 +176,13 @@ public final class HavaloClient extends HavaloAbstractService {
 				// code on the response is failure.
 				return statusCode == SC_NO_CONTENT;
 			}
-			@Override
-			public Integer success(final HttpSuccess success) {
-				return success.getResponse().getStatusLine().getStatusCode();
-			}
 		}.request(new HttpDelete(SLASH_STRING + API_ACTION_REPOSITORY +
 			SLASH_STRING + repoId));
 	}
 	
 	public HttpResponseEither<HttpFailure,ObjectList> listObjects(final String... path) {
-		return new HavaloHttpClient4Closure<ObjectList>(client_) {
+		return new HavaloGsonClosure<ObjectList>(client_, gson_.create(),
+			ObjectList.class) {
 			@Override
 			public void before(final HttpRequestBase request) {
 				final List<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -188,12 +201,6 @@ public final class HavaloClient extends HavaloAbstractService {
 				// resulting status code is a 200 OK.  Any other status
 				// code on the response is failure.
 				return statusCode == SC_OK;
-			}
-			@Override
-			public ObjectList success(final HttpSuccess success) throws Exception {
-				return gson_.create().fromJson(
-					responseToString(success.getResponse()),
-					ObjectList.class);
 			}
 		}.request(new HttpGet(SLASH_STRING + API_ACTION_REPOSITORY));
 	}
@@ -216,7 +223,7 @@ public final class HavaloClient extends HavaloAbstractService {
 
 	public <T> HttpResponseEither<HttpFailure,T> getObject(
 		final CustomEntityConverter<T> converter, final String... path) {
-		return new HavaloHttpClient4Closure<T>(client_) {
+		return new HavaloGsonClosure<T>(client_, converter.getClass()) {
 			@Override
 			public boolean check(final int statusCode) {
 				// The GET of an object is only successful when the
@@ -234,7 +241,7 @@ public final class HavaloClient extends HavaloAbstractService {
 
 	public HttpResponseEither<HttpFailure,List<Header>> getObjectMetaData(
 		final String... path) {
-		return new HavaloHttpClient4Closure<List<Header>>(client_) {
+		return new HavaloHeadersClosure(client_) {
 			@Override
 			public boolean check(final int statusCode) {
 				// The HEAD of an object is only successful when the
@@ -253,7 +260,8 @@ public final class HavaloClient extends HavaloAbstractService {
 	public HttpResponseEither<HttpFailure,FileObject> putObject(
 		final InputStream input, final long contentLength,
 		final Header[] headers, final String... path) {
-		return new HavaloHttpClient4Closure<FileObject>(client_) {
+		return new HavaloGsonClosure<FileObject>(client_, gson_.create(),
+			FileObject.class) {
 			@Override
 			public void before(final HttpRequestBase request) {
 				if(headers != null) {
@@ -269,12 +277,6 @@ public final class HavaloClient extends HavaloAbstractService {
 				// resulting status code is a 200 OK.  Any other status
 				// code on the response is failure.
 				return statusCode == SC_OK;
-			}
-			@Override
-			public FileObject success(final HttpSuccess success) throws Exception {
-				return gson_.create().fromJson(
-					responseToString(success.getResponse()),
-					FileObject.class);
 			}
 		}.request(new HttpPut(SLASH_STRING + API_ACTION_OBJECT + SLASH_STRING +
 			urlEncode(varargsToPrefixString(path))));
@@ -293,7 +295,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		
 	public HttpResponseEither<HttpFailure,Integer> deleteObject(
 		final Header[] headers, final String... path) {
-		return new HavaloHttpClient4Closure<Integer>(client_) {
+		return new HavaloStatusCodeClosure(client_) {
 			@Override
 			public void before(final HttpRequestBase request) {
 				if(headers != null) {
@@ -307,10 +309,6 @@ public final class HavaloClient extends HavaloAbstractService {
 				// resulting status code is a 204 No Content.  Any other status
 				// code on the response is failure.
 				return statusCode == SC_NO_CONTENT;
-			}
-			@Override
-			public Integer success(final HttpSuccess success) {
-				return success.getResponse().getStatusLine().getStatusCode();
 			}
 		}.request(new HttpDelete(SLASH_STRING + API_ACTION_OBJECT +
 			SLASH_STRING + urlEncode(varargsToPrefixString(path))));
