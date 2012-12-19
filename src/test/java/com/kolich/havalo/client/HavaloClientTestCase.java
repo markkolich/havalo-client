@@ -26,14 +26,7 @@
 
 package com.kolich.havalo.client;
 
-import org.apache.http.client.HttpClient;
-
 import com.kolich.havalo.client.service.HavaloClient;
-import com.kolich.havalo.client.service.HavaloClientCredentials;
-import com.kolich.havalo.client.service.HavaloClientSigner;
-import com.kolich.havalo.client.signing.HavaloAbstractSigner;
-import com.kolich.havalo.client.signing.algorithms.HMACSHA256Signer;
-import com.kolich.http.KolichDefaultHttpClient.KolichHttpClientFactory;
 
 public abstract class HavaloClientTestCase {
 	
@@ -44,10 +37,6 @@ public abstract class HavaloClientTestCase {
     /*
      * -Dhavalo.apiUrl=http://someurl.example.com -Dhavalo.key=AKIAJ5IHGCMPX2GWPWIQ -Dhavalo.secret=1234567890123456789012345678901234456789
      */
-    
-    protected final HavaloClientCredentials credentials_;
-    protected final HttpClient httpClient_;
-    protected final HavaloAbstractSigner signer_;
     
     protected final HavaloClient client_;
 	
@@ -61,15 +50,8 @@ public abstract class HavaloClientTestCase {
 				"-Dhavalo.apiUrl or -Dhavalo.key or -Dhavalo.secret " +
 					"required VM properties on your command line.");
 		}
-		// Setup the access credentials.
-		credentials_ = new HavaloClientCredentials(key, secret);
-		// Create a new Havalo HTTP connector with a pre-configured
-		// HTTP client.
-		httpClient_ = KolichHttpClientFactory.getNewInstanceWithProxySelector();
-		// Create a new HMAC-SHA256 signer.
-		signer_ = new HavaloClientSigner(credentials_, new HMACSHA256Signer());
-		// Setup a new HavaloClient
-		client_ = new HavaloClient(httpClient_, signer_, apiUrl);
+		// Setup a new Havalo client instance.
+		client_ = new HavaloClient(key, secret, apiUrl);
 	}
 	
 }

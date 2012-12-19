@@ -67,7 +67,7 @@ object HavaloClient extends Build {
   import Resolvers._
 
   private val aName = "havalo-client"
-  private val aVer = "0.0.6"
+  private val aVer = "0.0.7"
   private val aOrg = "com.kolich"
 
   lazy val havaloClient: Project = Project(

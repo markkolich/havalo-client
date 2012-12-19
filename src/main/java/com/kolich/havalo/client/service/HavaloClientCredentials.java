@@ -32,8 +32,8 @@ import com.kolich.havalo.client.signing.HavaloCredentials;
 
 public final class HavaloClientCredentials implements HavaloCredentials {
 	
-	private String key_;
-	private String secret_;
+	private final String key_;
+	private final String secret_;
 	
 	public HavaloClientCredentials(String key, String secret) {
 		checkNotNull(key, "API access key cannot be null!");

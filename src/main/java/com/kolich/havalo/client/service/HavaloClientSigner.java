@@ -39,6 +39,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import com.kolich.common.date.RFC822DateFormat;
 import com.kolich.havalo.client.signing.HavaloAbstractSigner;
 import com.kolich.havalo.client.signing.HavaloCredentials;
+import com.kolich.havalo.client.signing.algorithms.HMACSHA256Signer;
 import com.kolich.havalo.client.signing.algorithms.HavaloSigningAlgorithm;
 
 public final class HavaloClientSigner extends HavaloAbstractSigner {
@@ -46,6 +47,10 @@ public final class HavaloClientSigner extends HavaloAbstractSigner {
 	public HavaloClientSigner(HavaloCredentials credentials,
 		HavaloSigningAlgorithm signer) {
 		super(credentials, signer);
+	}
+	
+	public HavaloClientSigner(HavaloCredentials credentials) {
+		this(credentials, new HMACSHA256Signer());
 	}
 	
 	// Expected format is ...

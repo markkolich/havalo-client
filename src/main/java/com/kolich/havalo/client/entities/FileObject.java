@@ -33,7 +33,7 @@ import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
 
-public final class FileObject implements Serializable {
+public final class FileObject implements Serializable, Comparable<FileObject> {
 	
 	private static final long serialVersionUID = -4070962176507989584L;
 
@@ -93,6 +93,11 @@ public final class FileObject implements Serializable {
 		} else if (!name_.equals(other.name_))
 			return false;
 		return true;
+	}
+
+	@Override
+	public int compareTo(FileObject o) {
+		return o.getName().compareTo(getName());
 	}
 	
 }
