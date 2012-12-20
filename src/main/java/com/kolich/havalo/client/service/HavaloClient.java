@@ -124,6 +124,10 @@ public final class HavaloClient extends HavaloAbstractService {
 			final HttpContext context) {
 			return expectStatus_ == response.getStatusLine().getStatusCode();
 		}
+		public final HttpResponseEither<HttpFailure,T> head(
+			final String action, final String... path) {
+			return super.get(buildPath(action, path));
+		}
 	}
 		
 	private abstract class HavaloGsonClosure<T>
@@ -143,6 +147,20 @@ public final class HavaloClient extends HavaloAbstractService {
 			final HttpContext context) {
 			return expectStatus_ == response.getStatusLine().getStatusCode();
 		}
+		@Override
+		public final HttpResponseEither<HttpFailure,T> get(
+			final String action) {
+			return super.get(buildPath(action));
+		}
+		@Override
+		public final HttpResponseEither<HttpFailure,T> post(
+			final String action) {
+			return super.post(buildPath(action));
+		}
+		public final HttpResponseEither<HttpFailure,T> put(
+			final String action, final String... path) {
+			return super.post(buildPath(action, path));
+		}
 	}
 	
 	private abstract class HavaloStatusCodeClosure
@@ -161,6 +179,10 @@ public final class HavaloClient extends HavaloAbstractService {
 		public boolean check(final HttpResponse response,
 			final HttpContext context) {
 			return expectStatus_ == response.getStatusLine().getStatusCode();
+		}
+		public final HttpResponseEither<HttpFailure,Integer> delete(
+			final String action, final String... path) {
+			return super.delete(buildPath(action, path));
 		}
 	}
 	
@@ -182,6 +204,15 @@ public final class HavaloClient extends HavaloAbstractService {
 			final HttpContext context) {
 			return expectStatus_ == response.getStatusLine().getStatusCode();
 		}
+		public final HttpResponseEither<HttpFailure,T> get(
+			final String action, final String... path) {
+			return super.get(buildPath(action, path));
+		}
+		@Override
+		public final HttpResponseEither<HttpFailure,T> post(
+			final String action) {
+			return super.post(buildPath(action));
+		}
 	}
 	
 	public HttpResponseEither<HttpFailure,KeyPair> authenticate() {
@@ -189,7 +220,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		// resulting status code is a 200 OK.  Any other status
 		// code on the response is failure.
 		return new HavaloGsonClosure<KeyPair>(client_, gson_.create(),
-			KeyPair.class, SC_OK){}.post(buildPath(API_ACTION_AUTHENTICATE));
+			KeyPair.class, SC_OK){}.post(API_ACTION_AUTHENTICATE);
 	}
 	
 	public HttpResponseEither<HttpFailure,KeyPair> createRepository() {
@@ -197,7 +228,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		// resulting status code is a 201 Created.  Any other status
 		// code on the response is failure.
 		return new HavaloGsonClosure<KeyPair>(client_, gson_.create(),
-			KeyPair.class, SC_CREATED){}.post(buildPath(API_ACTION_REPOSITORY));
+			KeyPair.class, SC_CREATED){}.post(API_ACTION_REPOSITORY);
 	}
 	
 	public HttpResponseEither<HttpFailure,Integer> deleteRepository(
@@ -206,7 +237,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		// resulting status code is a 204 No Content.  Any other
 		// status code on the response is failure.
 		return new HavaloStatusCodeClosure(client_, SC_NO_CONTENT){}
-			.delete(buildPath(API_ACTION_REPOSITORY, repoId.toString()));
+			.delete(API_ACTION_REPOSITORY, repoId.toString());
 	}
 	
 	public HttpResponseEither<HttpFailure,ObjectList> listObjects(
@@ -228,7 +259,7 @@ public final class HavaloClient extends HavaloAbstractService {
 					QUERY_STRING + URLEncodedUtils.format(params, UTF_8)));
 				super.before(request);
 			}
-		}.get(buildPath(API_ACTION_REPOSITORY));
+		}.get(API_ACTION_REPOSITORY);
 	}
 	
 	public HttpResponseEither<HttpFailure,ObjectList> listObjects() {
@@ -253,7 +284,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		// resulting status code is a 200 OK.  Any other status
 		// code on the response is failure.
 		return new HavaloEntityConverterClosure<T>(client_, converter, SC_OK){}
-			.get(buildPath(API_ACTION_OBJECT, path));
+			.get(API_ACTION_OBJECT, path);
 	}
 
 	public HttpResponseEither<HttpFailure,List<Header>> getObjectMetaData(
@@ -266,7 +297,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			public List<Header> success(final HttpSuccess success) {
 				return Arrays.asList(success.getResponse().getAllHeaders());
 			}
-		}.head(buildPath(API_ACTION_OBJECT, path));
+		}.head(API_ACTION_OBJECT, path);
 	}
 	
 	public HttpResponseEither<HttpFailure,FileObject> putObject(
@@ -286,7 +317,7 @@ public final class HavaloClient extends HavaloAbstractService {
 					contentLength));
 				super.before(request);
 			}
-		}.put(buildPath(API_ACTION_OBJECT, path));
+		}.put(API_ACTION_OBJECT, path);
 	}
 			
 	public HttpResponseEither<HttpFailure,FileObject> putObject(
@@ -313,7 +344,7 @@ public final class HavaloClient extends HavaloAbstractService {
 				}
 				super.before(request);
 			}
-		}.delete(buildPath(API_ACTION_OBJECT, path));
+		}.delete(API_ACTION_OBJECT, path);
 	}
 	
 	public HttpResponseEither<HttpFailure,Integer> deleteObject(
@@ -326,7 +357,8 @@ public final class HavaloClient extends HavaloAbstractService {
 		final StringBuilder sb = new StringBuilder(SLASH_STRING);
 		sb.append(action);
 		if(path != null) {
-			sb.append(SLASH_STRING).append(urlEncode(varargsToPrefixString(path)));
+			sb.append(SLASH_STRING).append(urlEncode(
+				varargsToPrefixString(path)));
 		}
 		return sb.toString();
 	}
