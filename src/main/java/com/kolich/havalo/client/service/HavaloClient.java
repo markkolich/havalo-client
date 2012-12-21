@@ -126,7 +126,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		}
 		public final HttpResponseEither<HttpFailure,T> head(
 			final String action, final String... path) {
-			return super.get(buildPath(action, path));
+			return super.head(buildPath(action, path));
 		}
 	}
 		
@@ -159,7 +159,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		}
 		public final HttpResponseEither<HttpFailure,T> put(
 			final String action, final String... path) {
-			return super.post(buildPath(action, path));
+			return super.put(buildPath(action, path));
 		}
 	}
 	
