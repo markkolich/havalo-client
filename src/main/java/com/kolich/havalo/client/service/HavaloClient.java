@@ -26,7 +26,6 @@
 
 package com.kolich.havalo.client.service;
 
-import static com.kolich.common.DefaultCharacterEncoding.UTF_8;
 import static com.kolich.common.entities.KolichCommonEntity.getDefaultGsonBuilder;
 import static com.kolich.common.util.URLEncodingUtils.urlEncode;
 import static com.kolich.http.KolichDefaultHttpClient.KolichHttpClientFactory.getNewInstanceWithProxySelector;
@@ -38,21 +37,17 @@ import static org.apache.http.HttpStatus.SC_OK;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
 
 import com.google.gson.Gson;
@@ -116,7 +111,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			expectStatus_ = expectStatus;
 		}
 		@Override
-		public void before(final HttpRequestBase request) {
+		public void before(final HttpRequestBase request) throws Exception {
 			signRequest(request);
 		}
 		@Override
@@ -139,7 +134,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			expectStatus_ = expectStatus;
 		}
 		@Override
-		public void before(final HttpRequestBase request) {
+		public void before(final HttpRequestBase request) throws Exception {
 			signRequest(request);
 		}
 		@Override
@@ -172,7 +167,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			expectStatus_ = expectStatus;
 		}
 		@Override
-		public void before(final HttpRequestBase request) {
+		public void before(final HttpRequestBase request) throws Exception {
 			signRequest(request);
 		}
 		@Override
@@ -196,7 +191,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			expectStatus_ = expectStatus;
 		}
 		@Override
-		public void before(final HttpRequestBase request) {
+		public void before(final HttpRequestBase request) throws Exception {
 			signRequest(request);
 		}
 		@Override
@@ -248,15 +243,13 @@ public final class HavaloClient extends HavaloAbstractService {
 		return new HavaloGsonClosure<ObjectList>(client_, gson_.create(), 
 			ObjectList.class, SC_OK) {
 			@Override
-			public void before(final HttpRequestBase request) {
-				final List<NameValuePair> params = new ArrayList<NameValuePair>();
+			public void before(final HttpRequestBase request) throws Exception {
+				final URIBuilder builder = new URIBuilder(request.getURI());
 				if(path != null && path.length > 0) {
-					params.add(new BasicNameValuePair(API_PARAM_STARTSWITH,
-						varargsToPrefixString(path)));
+					builder.addParameter(API_PARAM_STARTSWITH,
+						varargsToPrefixString(path));
 				}
-				// Update the URI to include the "?query=" parameters.
-				request.setURI(URI.create(request.getURI().toString() +
-					QUERY_STRING + URLEncodedUtils.format(params, UTF_8)));
+				request.setURI(builder.build());
 				super.before(request);
 			}
 		}.get(API_ACTION_REPOSITORY);
@@ -309,7 +302,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		return new HavaloGsonClosure<FileObject>(client_, gson_.create(),
 			FileObject.class, SC_OK) {
 			@Override
-			public void before(final HttpRequestBase request) {
+			public void before(final HttpRequestBase request) throws Exception {
 				if(headers != null) {
 					request.setHeaders(headers);
 				}
@@ -338,7 +331,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		// code on the response is failure.
 		return new HavaloStatusCodeClosure(client_, SC_NO_CONTENT) {
 			@Override
-			public void before(final HttpRequestBase request) {
+			public void before(final HttpRequestBase request) throws Exception {
 				if(headers != null) {
 					request.setHeaders(headers);
 				}
