@@ -60,9 +60,9 @@ import com.kolich.http.HttpClient4Closure;
 import com.kolich.http.HttpClient4Closure.HttpFailure;
 import com.kolich.http.HttpClient4Closure.HttpResponseEither;
 import com.kolich.http.HttpClient4Closure.HttpSuccess;
-import com.kolich.http.helpers.CustomEntityConverterOrHttpFailureClosure;
-import com.kolich.http.helpers.GsonOrHttpFailureClosure;
-import com.kolich.http.helpers.StatusCodeOrHttpFailureClosure;
+import com.kolich.http.helpers.EntityConverterClosures.CustomEntityConverterOrHttpFailureClosure;
+import com.kolich.http.helpers.GsonClosures.GsonOrHttpFailureClosure;
+import com.kolich.http.helpers.StatusCodeAndHeaderClosures.StatusCodeOrHttpFailureClosure;
 import com.kolich.http.helpers.definitions.CustomEntityConverter;
 
 public final class HavaloClient extends HavaloAbstractService {

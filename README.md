@@ -2,13 +2,13 @@
 
 A client for the <a href="https://github.com/markkolich/havalo#api">Havalo K,V store RESTful API</a>.
 
-Uses the <a href="http://hc.apache.org/">Apache Commons HttpClient</a> version 4.2.2 under-the-hood, and makes agressive use of <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a>. 
+Makes makes aggressive use of <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a>, and uses the <a href="http://hc.apache.org/">Apache Commons HttpClient</a> version 4.2.2 under-the-hood. 
 
 Written in Java, but Scala compatible.
 
 ## Latest Version
 
-The latest stable version of this library is <a href="http://markkolich.github.com/repo/com/kolich/havalo-client/0.0.7">0.0.7</a>.
+The latest stable version of this library is <a href="http://markkolich.github.com/repo/com/kolich/havalo-client/0.0.8">0.0.8</a>.
 
 ## Resolvers
 
@@ -19,7 +19,7 @@ If you wish to use this artifact, you can easily add it to your existing Maven o
 ```scala
 resolvers += "Kolich repo" at "http://markkolich.github.com/repo"
 
-val havaloClient = "com.kolich" % "havalo-client" % "0.0.7" % "compile"
+val havaloClient = "com.kolich" % "havalo-client" % "0.0.8" % "compile"
 ```
 
 ### Maven
@@ -35,7 +35,7 @@ val havaloClient = "com.kolich" % "havalo-client" % "0.0.7" % "compile"
 <dependency>
   <groupId>com.kolich</groupId>
   <artifactId>havalo-client</artifactId>
-  <version>0.0.7</version>
+  <version>0.0.8</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -262,7 +262,7 @@ if(delete.success()) {
       break;
     case 409:
       // HTTP/1.1 409 Conflict
-      // Object conflict, the provided ETag did not match.
+      // Object conflict, the sent SHA-1 hash did not match.
       // ...
       break;
     default:
@@ -307,15 +307,15 @@ Run SBT from within havalo-client.
     #~> cd havalo-client
     #~/havalo-client> sbt
     ...
-    havalo-client:0.0.7>
+    havalo-client:0.0.8>
 
 You will see a `havalo-client` SBT prompt once all dependencies are resolved and the project is loaded.
 
 In SBT, run `package` to compile and package the JAR.
 
-    havalo-client:0.0.7> package
+    havalo-client:0.0.8> package
     [info] Compiling 12 Java sources to ~/havalo-client/target/classes...
-    [info] Packaging ~/havalo-client/dist/havalo-client-0.0.7.jar ...
+    [info] Packaging ~/havalo-client/dist/havalo-client-0.0.8.jar ...
     [info] Done packaging.
     [success] Total time: 4 s, completed
 
@@ -323,7 +323,7 @@ Note the resulting JAR is placed into the **havalo-client/dist** directory.
 
 To create an Eclipse Java project for havalo-client, run `eclipse` in SBT.
 
-    havalo-client:0.0.7> eclipse
+    havalo-client:0.0.8> eclipse
     ...
     [info] Successfully created Eclipse project files for project(s):
     [info] havalo-client
@@ -331,12 +331,6 @@ To create an Eclipse Java project for havalo-client, run `eclipse` in SBT.
 You'll now have a real Eclipse **.project** file worthy of an Eclipse import.
 
 Note your new **.classpath** file as well &mdash; all source JAR's are fetched and injected into the Eclipse project automatically.
-
-## Dependencies
-
-Currently, this artifact is built around my <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> library.
-
-It also firmly depends on my common package of utility classes, <a href="https://github.com/markkolich/kolich-common">kolich-common</a>.
 
 ## Licensing
 
