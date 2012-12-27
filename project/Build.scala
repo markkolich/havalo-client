@@ -33,7 +33,6 @@ object Dependencies {
 
   // Internal dependencies
 
-  private val kolichCommon = "com.kolich" % "kolich-common" % "0.0.4" % "compile"
   private val kolichHttpClient4Closure = "com.kolich" % "kolich-httpclient4-closure" % "0.0.6" % "compile"
 
   // External dependencies
@@ -45,7 +44,7 @@ object Dependencies {
 
   val deps = Seq(
     // Internal.
-    kolichCommon, kolichHttpClient4Closure,
+    kolichHttpClient4Closure,
     // External.
     slf4j,
     junitInterface,
