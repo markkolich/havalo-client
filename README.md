@@ -40,7 +40,7 @@ val havaloClient = "com.kolich" % "havalo-client" % "0.0.7" % "compile"
 
 ## Usage
 
-### 1 &ndash; Instantiate a HavaloClient
+### Instantiate a HavaloClient
 
 Before you can do anything, you'll need to instantiate a `HavaloClient` backed by an `HttpClient` instance.
 
@@ -57,10 +57,10 @@ final String secret = ...; // Your Havalo API secret
 
 final String apiUrl = ...; // Your Havalo API endpoint URL
 
-final HavaloClient client = new HavaloClient(key, secret, url);
+final HavaloClient client = new HavaloClient(key, secret, apiUrl);
 ```
 
-If you're using Spring, you can also instantiate a `HavaloClient` in the form a Bean.
+If you're using Spring, your web-application can also instantiate a `HavaloClient` in the form a Bean.
 
 ```xml
 <bean id="HavaloClient"
@@ -73,16 +73,17 @@ If you're using Spring, you can also instantiate a `HavaloClient` in the form a 
 
 That's it!
 
-### 2 &ndash; Using the Client
+### Using the Client
 
-All `HavaloClient` methods return an `HttpResponseEither<F,S>` &mdash; this return type represents *either* a left type `F` indicating failure, or a right type `S` indicating success.  For more details on this return type and how to use it, please refer to this <a href="https://github.com/markkolich/kolich-httpclient4-closure#functional-concepts">Functional Concepts overview</a> in my <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> library.
+All `HavaloClient` methods return an `HttpResponseEither<F,S>` &mdash; this return type represents *either* a left type `F` indicating failure, or a right type `S` indicating success.  For more details on this return type and how to use it, please refer to the <a href="https://github.com/markkolich/kolich-httpclient4-closure#functional-concepts">Functional Concepts overview</a> in my <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> library.
 
 #### authenticate()
 
 Verify your Havalo API authentication credentials.
 
 ```java
-final HttpResponseEither<HttpFailure,KeyPair> auth = client.authenticate();
+final HttpResponseEither<HttpFailure,KeyPair> auth =
+  client.authenticate();
 
 if(auth.success()) {
   System.out.println("Yay, it worked!");
@@ -96,7 +97,8 @@ Create a new repository.
 Note that only **administrator** level API users can create new repositories.
 
 ```java
-final HttpResponseEither<HttpFailure,KeyPair> repo = client.createRepository();
+final HttpResponseEither<HttpFailure,KeyPair> repo =
+  client.createRepository();
 
 final KeyPair kp;
 if((kp = repo.right()) != null) {
@@ -108,7 +110,7 @@ if((kp = repo.right()) != null) {
 
 #### deleteRepository(toDelete)
 
-Delete an existing repository.
+Delete repository by UUID `toDelete`.
 
 Note that only **administrator** level API users can delete repositories.
 
@@ -180,7 +182,7 @@ if(meta.success()) {
 
 #### putObject(inputStream, contentLength, headers, path...)
 
-Upload (`PUT`) and object to the given `path` that is `contentLength` bytes long, using the provided `inputStream`.  Send any additional meta data represented by `headers` with the request.
+Upload (`PUT`) and object to the given `path` that is `contentLength` bytes long, using the provided `inputStream`.  Send any additional meta data represented by `headers` with the request too.
 
 ```java
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
@@ -217,13 +219,13 @@ final HttpResponseEither<HttpFailure,FileObject> upload =
 if(upload.success()) {
   // Upload successful.
   final String eTag = upload.right().getFirstHeader("ETag");
-  System.out.println("Object SHA-1 ETag is: " + eTag);
+  System.out.println("Object SHA-1 hash is: " + eTag);
 }
 ```
 
 #### deleteObject(headers[], path...)
 
-Delete an object at the given `path` only if the ETag of that object matches the ETag provided by `ifMatch`.
+Delete an object at the given `path` only if the SHA-1 hash of that object matches the SHA-1 hash sent with the `If-Match` HTTP request header.
 
 ```java
 import static org.apache.http.HttpHeaders.IF_MATCH;
@@ -266,7 +268,7 @@ if(delete.success()) {
 
 #### deleteObject(path...)
 
-Delete an object at the given `path`, ignoring the ETag.
+Delete an object at the given `path`, ignoring the objects current hash.
 
 ```java
 // Delete the object at path "foobar/cat".
