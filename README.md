@@ -57,7 +57,9 @@ import java.util.UUID;
 final UUID key = ...; // Your Havalo API key (a UUID)
 final String secret = ...; // Your Havalo API secret
 
-final String apiUrl = ...; // Your Havalo API endpoint URL
+// Your Havalo API endpoint URL, usually something like:
+// http://localhost:8080/havalo/api
+final String apiUrl = ...;
 
 final HavaloClient client = new HavaloClient(key, secret, apiUrl);
 ```
@@ -75,7 +77,7 @@ If you're using Spring, your web-application can also instantiate a `HavaloClien
 
 That's it!
 
-### Using the Client
+### Using the HavaloClient
 
 All `HavaloClient` methods return an `HttpResponseEither<F,S>` &mdash; this return type represents *either* a left type `F` indicating failure, or a right type `S` indicating success.  For more details on this return type and how to use it, please refer to the <a href="https://github.com/markkolich/kolich-httpclient4-closure#functional-concepts">Functional Concepts overview</a> in my <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> library.
 
@@ -172,7 +174,7 @@ if(get.success()) {
 
 Get the meta data associated with the object at the given `path`.
 
-Any HTTP headers sent with the object during a `PUT` are returned.  Note that the API generated SHA-1 `ETag` that was computed on upload is also returned.
+Any HTTP headers sent with the object during a `PUT` are returned.  Note that the API generated SHA-1 hash that was computed on upload is also returned in the `ETag` HTTP response header.
 
 ```java
 // Get the meta data for the object whose key is "foobar/baz/1.xml"
@@ -210,7 +212,7 @@ if(upload.success()) {
 }
 ```
 
-**TIP:** For a conditional `PUT`, you can also send an `If-Match` HTTP request header with your request.  If the SHA-1 hash sent with the request matches the current SHA-1 hash of the object, it will be *replaced*.  If the SHA-1 hash sent with the request does *not* match the current hash of the object, the `PUT` will fail with a `409 Conflict`. 
+**TIP:** For a conditional `PUT`, you can also send an `If-Match` HTTP request header with your request.  If the SHA-1 hash sent with the `If-Match` header matches the current SHA-1 hash of the object, the object will be *replaced*.  If the SHA-1 hash sent with the `If-Match` header does *not* match the current hash of the object, the `PUT` will fail with a `409 Conflict`. 
 
 #### putObject(byte[], path...)
 
@@ -237,10 +239,10 @@ Delete an object at the given `path` only if the SHA-1 hash of that object match
 ```java
 import static org.apache.http.HttpHeaders.IF_MATCH;
 
-// An ETag for the object you want to delete.
+// An SHA-1 hash for the version of the object you want to delete.
 final String ifMatch = "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3";
 
-// Delete the object at path "foobar/cat" only if that object's ETag
+// Delete the object at path "foobar/cat" only if that object's hash
 // equals "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3".
 final HttpResponseEither<HttpFailure,Integer> delete =
   client.deleteObject(
