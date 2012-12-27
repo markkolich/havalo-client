@@ -264,14 +264,18 @@ public final class HavaloClient extends HavaloAbstractService {
 		return listObjects((String[])null);
 	}
 	
-	public HttpResponseEither<HttpFailure,Long> getObject(
+	public HttpResponseEither<HttpFailure,List<Header>> getObject(
 		final OutputStream destination, final String... path) {
-		return getObject(new CustomEntityConverter<Long>() {
+		return getObject(new CustomEntityConverter<List<Header>>() {
 			@Override
-			public Long convert(final HttpSuccess success) throws Exception {
-				return copyLarge(
-					success.getResponse().getEntity().getContent(),
+			public List<Header> convert(final HttpSuccess success) throws Exception {
+				// Copy the object.
+				copyLarge(success.getResponse().getEntity().getContent(),
 					destination);
+				// Get and return the headers on the HTTP response.
+				// This is where stuff like "Content-Type" and
+				// "Content-Length" live.
+				return Arrays.asList(success.getResponse().getAllHeaders());
 			}
 		}, path);
 	}

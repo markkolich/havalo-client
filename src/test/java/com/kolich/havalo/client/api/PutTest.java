@@ -32,8 +32,8 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAscii;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpHeaders.IF_MATCH;
 import static org.apache.http.HttpStatus.SC_CONFLICT;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -70,11 +70,11 @@ public class PutTest extends HavaloClientTestCase {
 		assertTrue("Failed to PUT sample object.", put.success());
 		// GET the object to make sure it actually worked.
 		final ByteArrayOutputStream os = new ByteArrayOutputStream();
-		final HttpResponseEither<HttpFailure,Long> get =
+		final HttpResponseEither<HttpFailure,List<Header>> get =
 			client_.getObject(os, "test", "jsonObject/hmm");
 		assertTrue("Failed to GET sample object after PUT.", get.success());
-		assertTrue("Failed to GET sample object after PUT -- empty object!?",
-			get.right() > 0L);
+		assertTrue("Failed to GET sample object after PUT -- no headers!?",
+			get.right().size() > 0L);
 		final String receivedString = newStringUtf8(os.toByteArray());
 		assertTrue("Object received on GET did not match object " +
 			"sent on PUT (sent="+ SAMPLE_JSON_OBJECT + ", received=" +

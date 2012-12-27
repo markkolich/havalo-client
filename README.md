@@ -1,6 +1,8 @@
 # havalo-client
 
-A robust client for the <a href="https://github.com/markkolich/havalo#api">Havalo K,V store RESTful API</a>. 
+A client for the <a href="https://github.com/markkolich/havalo#api">Havalo K,V store RESTful API</a>.
+
+Uses the <a href="http://hc.apache.org/">Apache Commons HttpClient</a> version 4.2.2 under-the-hood, and makes agressive use of <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a>. 
 
 Written in Java, but Scala compatible.
 
@@ -128,7 +130,7 @@ if(del.success()) {
 
 #### listObjects([prefix...])
 
-List objects in *your* repository, or list all objects in *your* repository that start with a given prefix.
+List objects in repository, or list all objects in repository that start with a given prefix.
 
 Note the `prefix` argument is optional &mdash; if omitted all objects will be returned.
 
@@ -151,11 +153,16 @@ final OutputStream os = ...; // An existing and open OutputStream.
 
 // Get the object whose key is "foobar/baz/0.json" and stream its
 // bytes to the provided OutputStream.
-final HttpResponseEither<HttpFailure,Long> get =
+final HttpResponseEither<HttpFailure,List<Header>> get =
   client.getObject(os, "foobar", "baz", "0.json");
 
 if(get.success()) {
-  System.out.println("I copied " + get.right() + " total bytes.");
+  // Success, object data was copied to provided OutputStream.
+  // Here are the HTTP headers on the response.
+  final List<Header> headers = get.right();
+  for(final Header h : headers) {
+    System.out.println(h.getName() + ": " + h.getValue());
+  }
 } else {
   System.out.println("Object not found?");
 }
