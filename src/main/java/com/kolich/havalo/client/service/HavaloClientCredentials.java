@@ -28,14 +28,16 @@ package com.kolich.havalo.client.service;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.UUID;
+
 import com.kolich.havalo.client.signing.HavaloCredentials;
 
 public final class HavaloClientCredentials implements HavaloCredentials {
 	
-	private final String key_;
+	private final UUID key_;
 	private final String secret_;
 	
-	public HavaloClientCredentials(String key, String secret) {
+	public HavaloClientCredentials(UUID key, String secret) {
 		checkNotNull(key, "API access key cannot be null!");
 		checkNotNull(secret, "API secret cannot be null!");
 		key_ = key;
@@ -43,7 +45,7 @@ public final class HavaloClientCredentials implements HavaloCredentials {
 	}
 	
 	@Override
-	public String getKey() {
+	public UUID getKey() {
 		return key_;
 	}
 	

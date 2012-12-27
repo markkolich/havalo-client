@@ -97,9 +97,14 @@ public final class HavaloClient extends HavaloAbstractService {
 		this(new HavaloClientSigner(credentials), apiEndpoint);
 	}
 	
-	public HavaloClient(final String key, final String secret,
+	public HavaloClient(final UUID key, final String secret,
 		final String apiEndpoint) {
 		this(new HavaloClientCredentials(key, secret), apiEndpoint);
+	}
+	
+	public HavaloClient(final String key, final String secret,
+		final String apiEndpoint) {
+		this(UUID.fromString(key), secret, apiEndpoint);
 	}
 	
 	private abstract class HavaloBaseClosure<T>

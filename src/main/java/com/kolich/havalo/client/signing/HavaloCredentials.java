@@ -26,13 +26,15 @@
 
 package com.kolich.havalo.client.signing;
 
+import java.util.UUID;
+
 public interface HavaloCredentials {
 	
 	/**
 	 * Returns a valid Havalo API access key.
 	 * @return
 	 */
-	public String getKey();
+	public UUID getKey();
 
 	/**
 	 * Returns a valid Havalo API access key secret.
