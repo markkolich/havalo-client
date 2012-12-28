@@ -76,20 +76,27 @@ public final class HavaloClient extends HavaloAbstractService {
 	private final HttpClient client_;
 	private final GsonBuilder gson_;
 	
-	public HavaloClient(HttpClient client, HavaloAbstractSigner signer,
-		GsonBuilder gson, String apiEndpoint) {
+	public HavaloClient(final HttpClient client,
+		final HavaloAbstractSigner signer, final GsonBuilder gson,
+		final String apiEndpoint) {
 		super(signer, apiEndpoint);
 		client_ = client;
 		gson_ = gson;
 	}
 	
-	public HavaloClient(HttpClient client, HavaloAbstractSigner signer,
-		final String apiEndpoint) {
+	public HavaloClient(final HttpClient client,
+		final HavaloAbstractSigner signer, final String apiEndpoint) {
 		this(client, signer, getDefaultGsonBuilder(), apiEndpoint);
 	}
 	
-	public HavaloClient(HavaloAbstractSigner signer, final String apiEndpoint) {
+	public HavaloClient(final HavaloAbstractSigner signer,
+		final String apiEndpoint) {
 		this(getNewInstanceWithProxySelector(), signer, apiEndpoint);
+	}
+	
+	public HavaloClient(final HttpClient client,
+		final HavaloClientCredentials credentials, final String apiEndpoint) {
+		this(client, new HavaloClientSigner(credentials), apiEndpoint);
 	}
 	
 	public HavaloClient(final HavaloClientCredentials credentials,
@@ -97,9 +104,19 @@ public final class HavaloClient extends HavaloAbstractService {
 		this(new HavaloClientSigner(credentials), apiEndpoint);
 	}
 	
+	public HavaloClient(final HttpClient client, final UUID key,
+		final String secret, final String apiEndpoint) {
+		this(client, new HavaloClientCredentials(key, secret), apiEndpoint);
+	}
+	
 	public HavaloClient(final UUID key, final String secret,
 		final String apiEndpoint) {
 		this(new HavaloClientCredentials(key, secret), apiEndpoint);
+	}
+	
+	public HavaloClient(final HttpClient client, final String key,
+		final String secret, final String apiEndpoint) {
+		this(client, UUID.fromString(key), secret, apiEndpoint);
 	}
 	
 	public HavaloClient(final String key, final String secret,

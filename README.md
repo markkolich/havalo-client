@@ -64,20 +64,36 @@ final String apiUrl = ...;
 final HavaloClient client = new HavaloClient(key, secret, apiUrl);
 ```
 
-If you're using Spring, your web-application can also instantiate a `HavaloClient` in the form a Bean.
+If you have a configured `HttpClient` that you'd like to use instead of the default, you can of course use a slightly different constructor and pass your own.
+
+```java
+final HttpClient client = ...; // Your own HttpClient instance
+
+final HavaloClient client = new HavaloClient(client, key, secret, apiUrl);
+```
+
+Finally, if you're using Spring, your web-application can also instantiate a `HavaloClient` bean.
 
 ```xml
+<!-- Your own HttpClient instance -->
+<bean id="HttpClient"
+  class="com.kolich.http.KolichDefaultHttpClient.KolichHttpClientFactory"
+  factory-method="getNewInstanceWithProxySelector">
+  <constructor-arg><value>Some kewl user-agent String</value></constructor-arg>
+</bean>
+
 <bean id="HavaloClient"
   class="com.kolich.havalo.client.service.HavaloClient">
-  <constructor-arg index="0"><value>6fe8e625-ec21-4890-a685-a7db4346cceb</value></constructor-arg>
-  <constructor-arg index="1"><value>Crb7s5coXNb...EnQIYr-9cxNqShozksHitLg</value></constructor-arg>
-  <constructor-arg index="2"><value>http://localhost:8080/havalo/api</value></constructor-arg>
+  <constructor-arg index="0" ref="HttpClient" />
+  <constructor-arg index="1"><value>6fe8e625-ec21-4890-a685-a7db4346cceb</value></constructor-arg>
+  <constructor-arg index="2"><value>Crb7s5coXNb...EnQIYr-9cxNqShozksHitLg</value></constructor-arg>
+  <constructor-arg index="3"><value>http://localhost:8080/havalo/api</value></constructor-arg>
 </bean>
 ```
 
-That's it!
+And, that's it!
 
-### Using the HavaloClient
+### Using your HavaloClient
 
 All `HavaloClient` methods return an `HttpResponseEither<F,S>` &mdash; this return type represents *either* a left type `F` indicating failure, or a right type `S` indicating success.  For more details on this return type and how to use it, please refer to the <a href="https://github.com/markkolich/kolich-httpclient4-closure#functional-concepts">Functional Concepts overview</a> in my <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> library.
 
@@ -85,12 +101,16 @@ All `HavaloClient` methods return an `HttpResponseEither<F,S>` &mdash; this retu
 
 Verify your Havalo API authentication credentials.
 
+Does nothing other than verifies that your API key and secret work.  This is most useful on application startup when you want to verify connectivity/access to the Havalo API before attempting to do actual work. 
+
 ```java
 final HttpResponseEither<HttpFailure,KeyPair> auth =
   client.authenticate();
 
 if(auth.success()) {
-  System.out.println("Yay, it worked!");
+  // Yay, it worked!
+} else {
+  // Authentication failed.
 }
 ```
 
@@ -166,7 +186,7 @@ if(get.success()) {
     System.out.println(h.getName() + ": " + h.getValue());
   }
 } else {
-  System.out.println("Object not found?");
+  // Object not found.
 }
 ```
 
@@ -206,9 +226,11 @@ final HttpResponseEither<HttpFailure,FileObject> upload =
     "baz", "foobar.jpg");
 
 if(upload.success()) {
-  // Upload successful.
-  final String eTag = upload.right().getFirstHeader("ETag");
-  System.out.println("Uploaded object SHA-1 hash is: " + eTag);
+  // Success!
+  // The SHA-1 hash of the uploaded object can be found in the
+  // ETag HTTP response header.
+  final String hash = upload.right().getFirstHeader("ETag");
+  System.out.println("Uploaded object SHA-1 hash is: " + hash);
 }
 ```
 
@@ -226,9 +248,11 @@ final HttpResponseEither<HttpFailure,FileObject> upload =
   client.putObject(data, "cat");
 
 if(upload.success()) {
-  // Upload successful.
-  final String eTag = upload.right().getFirstHeader("ETag");
-  System.out.println("Object SHA-1 hash is: " + eTag);
+  // Success!
+  // The SHA-1 hash of the uploaded object can be found in the
+  // ETag HTTP response header.
+  final String hash = upload.right().getFirstHeader("ETag");
+  System.out.println("Uploaded object SHA-1 hash is: " + hash);
 }
 ```
 
@@ -240,21 +264,21 @@ Delete an object at the given `path` only if the SHA-1 hash of that object match
 import static org.apache.http.HttpHeaders.IF_MATCH;
 
 // An SHA-1 hash for the version of the object you want to delete.
-final String ifMatch = "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3";
+final String myHash = "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3";
 
 // Delete the object at path "foobar/cat" only if that object's hash
 // equals "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3".
 final HttpResponseEither<HttpFailure,Integer> delete =
   client.deleteObject(
-    new Header[]{new BasicHeader(IF_MATCH, ifMatch)},
+    new Header[]{new BasicHeader(IF_MATCH, myHash)},
     "foobar", "cat"
   );
 
 if(delete.success()) {
-  // Deletion successful.
+  // Success!
 } else {
-  // Deletion failed, get the resulting HTTP status code
-  // so we can see what exactly happened.
+  // Failed, get the resulting HTTP status code so
+  // we can see what happened.
   final Integer result = delete.left();
   switch(result) {
     case 404:
@@ -277,7 +301,7 @@ if(delete.success()) {
 
 #### deleteObject(path...)
 
-Delete an object at the given `path`, ignoring the objects current hash.
+Delete an object at the given `path`, ignoring the object's current hash.
 
 ```java
 // Delete the object at path "foobar/cat".
@@ -285,9 +309,9 @@ final HttpResponseEither<HttpFailure,Integer> delete =
   client.deleteObject("foobar", "cat");
 
 if(delete.success()) {
-  // Deletion successful.
+  // Success!
 } else {
-  // Deletion failed.
+  // Failed
   System.out.println("Oops, delete failed with status: " + delete.left());
 }
 ```
