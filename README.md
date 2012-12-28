@@ -1,10 +1,8 @@
 # havalo-client
 
-A client for the <a href="https://github.com/markkolich/havalo#api">Havalo K,V store RESTful API</a>.
+A client for the <a href="https://github.com/markkolich/havalo#api">Havalo K,V store RESTful API</a>.  Written in Java, but Scala compatible.
 
-Makes makes aggressive use of <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a>, uses the <a href="http://hc.apache.org/">Apache Commons HttpClient</a> version 4.2.2 under-the-hood, and <a href="http://code.google.com/p/google-gson/">Google's GSON library</a> for all JSON handling. 
-
-Written in Java, but Scala compatible.
+Makes aggressive use of <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> backed by the <a href="http://hc.apache.org/">Apache Commons HttpClient 4.x</a>.  Also, uses <a href="http://code.google.com/p/google-gson/">Google's GSON library</a> for all JSON related "stuph" under-the-hood.
 
 ## Latest Version
 
@@ -44,7 +42,7 @@ val havaloClient = "com.kolich" % "havalo-client" % "0.0.8" % "compile"
 
 ### Instantiate a HavaloClient
 
-Before you can do anything, you'll need to instantiate a `HavaloClient` backed by an `HttpClient` instance.
+Before you can make API requests, you'll need to instantiate a `HavaloClient` backed by an `HttpClient` instance.
 
 You will pass your Havalo API access key and secret to the `HavaloClient` via its constructor.  The `HavaloClient` instance will handle all authentication with the API on your behalf.  Further, you'll need to provide the Havalo API endpoint URL.
 
@@ -54,10 +52,13 @@ Note, the API key and secret are created by the Havalo API when a new repository
 import com.kolich.havalo.client.service.HavaloClient;
 import java.util.UUID;
 
-final UUID key = ...; // Your Havalo API key (a UUID)
-final String secret = ...; // Your Havalo API secret
+// Your Havalo API key
+final UUID key = ...;
 
-// Your Havalo API endpoint URL, usually something like:
+// Your Havalo API secret
+final String secret = ...;
+
+// Your Havalo API endpoint URL, usually something like
 // http://localhost:8080/havalo/api
 final String apiUrl = ...;
 
@@ -67,6 +68,8 @@ final HavaloClient client = new HavaloClient(key, secret, apiUrl);
 If you have a configured `HttpClient` that you'd like to use instead of the default, you can of course use a slightly different constructor and pass your own.
 
 ```java
+import org.apache.http.client.HttpClient;
+
 final HttpClient client = ...; // Your own HttpClient instance
 
 final HavaloClient client = new HavaloClient(client, key, secret, apiUrl);
@@ -75,23 +78,23 @@ final HavaloClient client = new HavaloClient(client, key, secret, apiUrl);
 Finally, if you're using Spring, your web-application can also instantiate a `HavaloClient` bean.
 
 ```xml
-<!-- Your own HttpClient instance -->
-<bean id="HttpClient"
+<!-- An HttpClient instance, either created by the KolichHttpClientFactory or on your own. -->
+<bean id="YourHttpClient"
   class="com.kolich.http.KolichDefaultHttpClient.KolichHttpClientFactory"
   factory-method="getNewInstanceWithProxySelector">
-  <constructor-arg><value>Some kewl user-agent String</value></constructor-arg>
+  <constructor-arg><value>Some kewl user-agent</value></constructor-arg>
 </bean>
 
 <bean id="HavaloClient"
   class="com.kolich.havalo.client.service.HavaloClient">
-  <constructor-arg index="0" ref="HttpClient" />
+  <constructor-arg index="0" ref="YourHttpClient" />
   <constructor-arg index="1"><value>6fe8e625-ec21-4890-a685-a7db4346cceb</value></constructor-arg>
   <constructor-arg index="2"><value>Crb7s5coXNb...EnQIYr-9cxNqShozksHitLg</value></constructor-arg>
   <constructor-arg index="3"><value>http://localhost:8080/havalo/api</value></constructor-arg>
 </bean>
 ```
 
-That's it!
+That's it, you're ready to make API requests.
 
 ### Using your HavaloClient
 
@@ -108,7 +111,7 @@ final HttpResponseEither<HttpFailure,KeyPair> auth =
   client.authenticate();
 
 if(auth.success()) {
-  // Success!
+  // Success
 } else {
   // Failed
 }
@@ -126,7 +129,7 @@ final HttpResponseEither<HttpFailure,KeyPair> repo =
 
 final KeyPair kp;
 if((kp = repo.right()) != null) {
-  // Success.
+  // Success
   System.out.println("Your new API key: " + kp.getKey());
   System.out.println("Your new API secret: " + kp.getSecret());
 }
@@ -233,7 +236,7 @@ final HttpResponseEither<HttpFailure,FileObject> upload =
     "baz", "foobar.jpg");
 
 if(upload.success()) {
-  // Success!
+  // Success
   // The SHA-1 hash of the uploaded object can be found in the
   // ETag HTTP response header.
   final String hash = upload.right().getFirstHeader(ETAG);
@@ -255,7 +258,7 @@ final HttpResponseEither<HttpFailure,FileObject> upload =
   client.putObject(data, "cat");
 
 if(upload.success()) {
-  // Success!
+  // Success
   // The SHA-1 hash of the uploaded object can be found in the
   // ETag HTTP response header.
   final String hash = upload.right().getFirstHeader("ETag");
@@ -281,7 +284,7 @@ final HttpResponseEither<HttpFailure,Integer> delete =
     "foobar", "cat");
 
 if(delete.success()) {
-  // Success!
+  // Success
 } else {
   // Failed, get the resulting HTTP status code so
   // we can see what happened.
@@ -314,7 +317,7 @@ final HttpResponseEither<HttpFailure,Integer> delete =
   client.deleteObject("foobar", "cat");
 
 if(delete.success()) {
-  // Success!
+  // Success
 } else {
   // Failed
   System.out.println("Oops, delete failed with status: " +
