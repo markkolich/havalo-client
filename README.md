@@ -2,7 +2,7 @@
 
 A client for the <a href="https://github.com/markkolich/havalo#api">Havalo K,V store RESTful API</a>.
 
-Makes makes aggressive use of <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a>, and uses the <a href="http://hc.apache.org/">Apache Commons HttpClient</a> version 4.2.2 under-the-hood. 
+Makes makes aggressive use of <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a>, uses the <a href="http://hc.apache.org/">Apache Commons HttpClient</a> version 4.2.2 under-the-hood, and <a href="http://code.google.com/p/google-gson/">Google's GSON library</a> for all JSON handling. 
 
 Written in Java, but Scala compatible.
 
@@ -91,7 +91,7 @@ Finally, if you're using Spring, your web-application can also instantiate a `Ha
 </bean>
 ```
 
-And, that's it!
+That's it!
 
 ### Using your HavaloClient
 
@@ -101,16 +101,16 @@ All `HavaloClient` methods return an `HttpResponseEither<F,S>` &mdash; this retu
 
 Verify your Havalo API authentication credentials.
 
-Does nothing other than verifies that your API key and secret work.  This is most useful on application startup when you want to verify connectivity/access to the Havalo API before attempting to do actual work. 
+Does nothing other than verifies your API key and secret.  This is most useful on application startup when you want to verify connectivity/access to the Havalo API before attempting to do actual work. 
 
 ```java
 final HttpResponseEither<HttpFailure,KeyPair> auth =
   client.authenticate();
 
 if(auth.success()) {
-  // Yay, it worked!
+  // Success!
 } else {
-  // Authentication failed.
+  // Failed
 }
 ```
 
@@ -162,7 +162,8 @@ final HttpResponseEither<HttpFailure,ObjectList> list =
   client.listObjects("foobar", "baz");
 
 if(list.success()) {
-  System.out.println("Found " + list.getObjectList().size() + " objects.");
+  final ObjectList objs = list.right();
+  System.out.println("Found " + objs.size() + " objects.");
 }
 ```
 
@@ -211,25 +212,31 @@ if(meta.success()) {
 
 #### putObject(inputStream, contentLength, headers, path...)
 
-Upload (`PUT`) and object to the given `path` that is `contentLength` bytes long, using the provided `inputStream`.  Send any additional meta data represented by `headers` with the request too.
+Upload (`PUT`) an object to the given `path` that is `contentLength` bytes long, using the provided `inputStream`.  Send any additional meta data represented by `headers` with the request too.
 
 ```java
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.apache.http.HttpHeaders.ETAG;
 
 final InputStream is = ...; // An existing and open InputStream.
 
 // Upload an object to path "baz/foobar.jpg" .. since it's a JPG
 // image, also send the relevant Content-Type with the request.
 final HttpResponseEither<HttpFailure,FileObject> upload =
-  client.putObject(is, 1024L,
+  client.putObject(is,
+    // The number of bytes in this object.
+    1024L,
+    // A Content-Type to be saved with the object.  This header is
+    // sent back with the object when it's retrieved.
     new Header[]{new BasicHeader(CONTENT_TYPE, "image/jpeg")},
+    // The path to the object.
     "baz", "foobar.jpg");
 
 if(upload.success()) {
   // Success!
   // The SHA-1 hash of the uploaded object can be found in the
   // ETag HTTP response header.
-  final String hash = upload.right().getFirstHeader("ETag");
+  final String hash = upload.right().getFirstHeader(ETAG);
   System.out.println("Uploaded object SHA-1 hash is: " + hash);
 }
 ```
@@ -238,10 +245,10 @@ if(upload.success()) {
 
 #### putObject(byte[], path...)
 
-Upload (`PUT`) and object to the given `path` using the provided `byte[]` array.
+Upload (`PUT`) an object to the given `path` using the provided `byte[]` array.
 
 ```java
-final byte[] data = ...; // Some byte[] array of your data.
+final byte[] data = ...; // Some byte[] array of data.
 
 // Upload an object to path "cat"
 final HttpResponseEither<HttpFailure,FileObject> upload =
@@ -271,16 +278,14 @@ final String myHash = "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3";
 final HttpResponseEither<HttpFailure,Integer> delete =
   client.deleteObject(
     new Header[]{new BasicHeader(IF_MATCH, myHash)},
-    "foobar", "cat"
-  );
+    "foobar", "cat");
 
 if(delete.success()) {
   // Success!
 } else {
   // Failed, get the resulting HTTP status code so
   // we can see what happened.
-  final Integer result = delete.left();
-  switch(result) {
+  switch(delete.left()) {
     case 404:
       // HTTP/1.1 404 Not Found
       // Object at provided path didn't exist.
