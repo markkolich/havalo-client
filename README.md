@@ -285,7 +285,7 @@ if(delete.success()) {
 } else {
   // Failed, get the resulting HTTP status code so
   // we can see what happened.
-  switch(delete.left()) {
+  switch(delete.left().getStatusCode()) {
     case 404:
       // HTTP/1.1 404 Not Found
       // Object at provided path didn't exist.
@@ -317,7 +317,8 @@ if(delete.success()) {
   // Success!
 } else {
   // Failed
-  System.out.println("Oops, delete failed with status: " + delete.left());
+  System.out.println("Oops, delete failed with status: " +
+    delete.left().getStatusCode());
 }
 ```
 
