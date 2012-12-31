@@ -70,9 +70,9 @@ If you have a configured `HttpClient` that you'd like to use instead of the defa
 ```java
 import org.apache.http.client.HttpClient;
 
-final HttpClient client = ...; // Your own HttpClient instance
+final HttpClient httpClient = ...; // Your own HttpClient instance
 
-final HavaloClient client = new HavaloClient(client, key, secret, apiUrl);
+final HavaloClient client = new HavaloClient(httpClient, key, secret, apiUrl);
 ```
 
 Finally, if you're using Spring, your web-application can also instantiate a `HavaloClient` bean.
