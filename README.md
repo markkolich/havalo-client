@@ -6,7 +6,7 @@ Makes aggressive use of <a href="https://github.com/markkolich/kolich-httpclient
 
 ## Latest Version
 
-The latest stable version of this library is <a href="http://markkolich.github.com/repo/com/kolich/havalo-client/0.0.8">0.0.8</a>.
+The latest stable version of this library is <a href="http://markkolich.github.com/repo/com/kolich/havalo-client/1.0">1.0</a>.
 
 ## Resolvers
 
@@ -17,7 +17,7 @@ If you wish to use this artifact, you can easily add it to your existing Maven o
 ```scala
 resolvers += "Kolich repo" at "http://markkolich.github.com/repo"
 
-val havaloClient = "com.kolich" % "havalo-client" % "0.0.8" % "compile"
+val havaloClient = "com.kolich" % "havalo-client" % "1.0" % "compile"
 ```
 
 ### Maven
@@ -33,7 +33,7 @@ val havaloClient = "com.kolich" % "havalo-client" % "0.0.8" % "compile"
 <dependency>
   <groupId>com.kolich</groupId>
   <artifactId>havalo-client</artifactId>
-  <version>0.0.8</version>
+  <version>1.0</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -342,15 +342,15 @@ Run SBT from within havalo-client.
     #~> cd havalo-client
     #~/havalo-client> sbt
     ...
-    havalo-client:0.0.8>
+    havalo-client:1.0>
 
 You will see a `havalo-client` SBT prompt once all dependencies are resolved and the project is loaded.
 
 In SBT, run `package` to compile and package the JAR.
 
-    havalo-client:0.0.8> package
+    havalo-client:1.0> package
     [info] Compiling 12 Java sources to ~/havalo-client/target/classes...
-    [info] Packaging ~/havalo-client/dist/havalo-client-0.0.8.jar ...
+    [info] Packaging ~/havalo-client/dist/havalo-client-1.0.jar ...
     [info] Done packaging.
     [success] Total time: 4 s, completed
 
@@ -358,7 +358,7 @@ Note the resulting JAR is placed into the **havalo-client/dist** directory.
 
 To create an Eclipse Java project for havalo-client, run `eclipse` in SBT.
 
-    havalo-client:0.0.8> eclipse
+    havalo-client:1.0> eclipse
     ...
     [info] Successfully created Eclipse project files for project(s):
     [info] havalo-client
