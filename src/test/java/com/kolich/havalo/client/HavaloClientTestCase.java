@@ -38,20 +38,23 @@ public abstract class HavaloClientTestCase {
      * -Dhavalo.apiUrl=http://someurl.example.com -Dhavalo.key=AKIAJ5IHGCMPX2GWPWIQ -Dhavalo.secret=1234567890123456789012345678901234456789
      */
     
+    protected final String apiUrl_;
+    protected final String apiKey_;
+    protected final String apiSecret_;
+    
     protected final HavaloClient client_;
 	
 	public HavaloClientTestCase() throws Exception {
-		super();
-		final String apiUrl = System.getProperty(HAVALO_API_URL_PROPERTY);
-		final String key = System.getProperty(HAVALO_ACCESS_KEY_PROPERTY);
-		final String secret = System.getProperty(HAVALO_SECRET_PROPERTY);
-		if(apiUrl == null || key == null || secret == null) {
+		apiUrl_ = System.getProperty(HAVALO_API_URL_PROPERTY);
+		apiKey_ = System.getProperty(HAVALO_ACCESS_KEY_PROPERTY);
+		apiSecret_ = System.getProperty(HAVALO_SECRET_PROPERTY);
+		if(apiUrl_ == null || apiKey_ == null || apiSecret_ == null) {
 			throw new IllegalArgumentException("You're missing the " +
 				"-Dhavalo.apiUrl or -Dhavalo.key or -Dhavalo.secret " +
 					"required VM properties on your command line.");
 		}
 		// Setup a new Havalo client instance.
-		client_ = new HavaloClient(key, secret, apiUrl);
+		client_ = new HavaloClient(apiKey_, apiSecret_, apiUrl_);
 	}
 	
 }

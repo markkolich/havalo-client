@@ -28,6 +28,7 @@ package com.kolich.havalo.client.api;
 
 import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -65,8 +66,23 @@ public class RepositoryTest extends HavaloClientTestCase {
 	}
 	
 	@Test
+	public void deleteAdminRepository() throws Exception {
+		// Attempt to delete the "admin" repository, should fail.
+		final HttpResponseEither<HttpFailure,Integer> delete =
+			client_.deleteRepository(UUID.fromString(apiKey_));
+		assertFalse("Uh, successfully deleted admin repository?",
+			delete.success());
+		// Validate that the API called failed in the "right way".
+		if(!delete.success()) {
+			assertTrue("Expected a 403 Forbidden when deleting admin " +
+				"repository, but got: " + delete.left().getStatusCode(),
+				delete.left().getStatusCode() == SC_FORBIDDEN);
+		}
+	}
+	
+	@Test
 	public void deleteNonExistentRepository() throws Exception {
-		// Delete a non-existent repository, should fail.
+		// Attempt to delete a non-existent repository, should fail.
 		final HttpResponseEither<HttpFailure,Integer> delete =
 			client_.deleteRepository(UUID.randomUUID());
 		assertFalse("Uh, successfully deleted non-existent repository?",
