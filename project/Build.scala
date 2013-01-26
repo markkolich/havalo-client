@@ -33,12 +33,10 @@ object Dependencies {
 
   // Internal dependencies
 
-  private val kolichHttpClient4Closure = "com.kolich" % "kolich-httpclient4-closure" % "0.0.7" % "compile"
+  private val kolichHttpClient4Closure = "com.kolich" % "kolich-httpclient4-closure" % "0.0.7.1" % "compile"
 
   // External dependencies
 
-  private val slf4j = "org.slf4j" % "slf4j-api" % "1.7.2" % "compile"
-  
   private val junitInterface = "com.novocode" % "junit-interface" % "0.10-M2" % "test"
   private val commonsLang = "org.apache.commons" % "commons-lang3" % "3.1" % "test"
 
@@ -46,7 +44,6 @@ object Dependencies {
     // Internal.
     kolichHttpClient4Closure,
     // External.
-    slf4j,
     junitInterface,
     commonsLang)
 
