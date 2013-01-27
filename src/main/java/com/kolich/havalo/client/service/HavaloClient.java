@@ -60,7 +60,7 @@ import com.kolich.http.HttpClient4Closure;
 import com.kolich.http.HttpClient4Closure.HttpFailure;
 import com.kolich.http.HttpClient4Closure.HttpResponseEither;
 import com.kolich.http.HttpClient4Closure.HttpSuccess;
-import com.kolich.http.helpers.EntityConverterClosures.CustomEntityConverterOrHttpFailureClosure;
+import com.kolich.http.helpers.EntityConverterClosures.CustomEntityConverterClosure;
 import com.kolich.http.helpers.GsonClosures.GsonOrHttpFailureClosure;
 import com.kolich.http.helpers.StatusCodeAndHeaderClosures.StatusCodeOrHttpFailureClosure;
 import com.kolich.http.helpers.definitions.CustomEntityConverter;
@@ -203,11 +203,11 @@ public final class HavaloClient extends HavaloAbstractService {
 		}
 	}
 	
-	private abstract class HavaloEntityConverterClosure<T>
-		extends CustomEntityConverterOrHttpFailureClosure<T> {
+	private abstract class HavaloEntityConverterClosure<F,S>
+		extends CustomEntityConverterClosure<F,S> {
 		private final int expectStatus_;
 		public HavaloEntityConverterClosure(final HttpClient client,
-			final CustomEntityConverter<T> converter,
+			final CustomEntityConverter<F,S> converter,
 			final int expectStatus) {
 			super(client, converter);
 			expectStatus_ = expectStatus;
@@ -221,13 +221,12 @@ public final class HavaloClient extends HavaloAbstractService {
 			final HttpContext context) {
 			return expectStatus_ == response.getStatusLine().getStatusCode();
 		}
-		public final HttpResponseEither<HttpFailure,T> get(
-			final String action, final String... path) {
+		public final HttpResponseEither<F,S> get(final String action,
+			final String... path) {
 			return super.get(buildPath(action, path));
 		}
 		@Override
-		public final HttpResponseEither<HttpFailure,T> post(
-			final String action) {
+		public final HttpResponseEither<F,S> post(final String action) {
 			return super.post(buildPath(action));
 		}
 	}
@@ -283,9 +282,9 @@ public final class HavaloClient extends HavaloAbstractService {
 	
 	public HttpResponseEither<HttpFailure,List<Header>> getObject(
 		final OutputStream destination, final String... path) {
-		return getObject(new CustomEntityConverter<List<Header>>() {
+		return getObject(new CustomEntityConverter<HttpFailure,List<Header>>() {
 			@Override
-			public List<Header> convert(final HttpSuccess success) throws Exception {
+			public List<Header> success(final HttpSuccess success) throws Exception {
 				// Copy the object.
 				copyLarge(success.getResponse().getEntity().getContent(),
 					destination);
@@ -294,16 +293,20 @@ public final class HavaloClient extends HavaloAbstractService {
 				// "Content-Length" live.
 				return Arrays.asList(success.getResponse().getAllHeaders());
 			}
+			@Override
+			public HttpFailure failure(final HttpFailure failure) {
+				return failure;
+			}
 		}, path);
 	}
-
-	public <T> HttpResponseEither<HttpFailure,T> getObject(
-		final CustomEntityConverter<T> converter, final String... path) {
+	
+	public <F,S> HttpResponseEither<F,S> getObject(
+		final CustomEntityConverter<F,S> converter, final String... path) {
 		// The GET of an object is only successful when the
 		// resulting status code is a 200 OK.  Any other status
 		// code on the response is failure.
-		return new HavaloEntityConverterClosure<T>(client_, converter, SC_OK){}
-			.get(API_ACTION_OBJECT, path);
+		return new HavaloEntityConverterClosure<F,S>(client_, converter,
+			SC_OK){}.get(API_ACTION_OBJECT, path);
 	}
 
 	public HttpResponseEither<HttpFailure,List<Header>> getObjectMetaData(
