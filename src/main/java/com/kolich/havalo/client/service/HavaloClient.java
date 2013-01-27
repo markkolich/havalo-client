@@ -225,10 +225,6 @@ public final class HavaloClient extends HavaloAbstractService {
 			final String... path) {
 			return super.get(buildPath(action, path));
 		}
-		@Override
-		public final HttpResponseEither<F,S> post(final String action) {
-			return super.post(buildPath(action));
-		}
 	}
 	
 	public HttpResponseEither<HttpFailure,KeyPair> authenticate() {
