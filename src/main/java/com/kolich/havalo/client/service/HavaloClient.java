@@ -282,8 +282,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			@Override
 			public List<Header> success(final HttpSuccess success) throws Exception {
 				// Copy the object.
-				copyLarge(success.getResponse().getEntity().getContent(),
-					destination);
+				copyLarge(success.getContent(), destination);
 				// Get and return the headers on the HTTP response.
 				// This is where stuff like "Content-Type" and
 				// "Content-Length" live.
