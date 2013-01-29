@@ -194,6 +194,44 @@ if(get.success()) {
 }
 ```
 
+Or, pass a `CustomEntityConverter` provided by the <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> to stream the object "elsewhere" on success, or handle a failure on error.  This allows you to extract meta-data about the object from Havalo before streaming the object out to a consumer &mdash; properties like the HTTP `Content-Length` or `Content-Type` of the object are only available on a `GET` operation if you use a `CustomEntityConverter`.  
+
+```java
+import com.kolich.http.helpers.definitions.CustomEntityConverter;
+
+import org.apache.commons.io.IOUtils;
+
+final ServletResponse response = ...; // From your Servlet container
+
+client.getObject(new CustomEntityConverter<HttpFailure,Long>() {
+  @Override
+  public Long success(final HttpSuccess success) throws Exception {
+    // Send down the HTTP Content-Type as fetched in the response
+    // from the Havalo K,V store.
+    final String contentType;
+    if((contentType = success.getContentType()) != null) {
+      response.setContentType(contentType);
+    }
+    // Send down the HTTP Content-Length as fetched in the response
+    // from the Havalo K,V store.
+    final String contentLength;
+    if((contentLength = success.getContentLength()) != null) {
+      response.setContentLength(Integer.parseInt(contentLength));
+    }
+    // Actually stream the bytes out to the caller.
+    final ServletOutputStream os = response.getOutputStream();
+    return IOUtils.copyLarge(success.getContent(), os);
+  }
+  @Override
+  public HttpFailure failure(final HttpFailure failure) {
+    // Handle failure, write out error response, do whatever is
+    // appropriate on error.
+    // ...
+    return failure;
+  }
+}, "foobar", "baz", "0.json");
+```
+
 #### getObjectMetaData(path...)
 
 Get the meta data associated with the object at the given `path`.
