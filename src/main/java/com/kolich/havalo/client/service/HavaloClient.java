@@ -64,6 +64,8 @@ import com.kolich.http.helpers.EntityConverterClosures.CustomEntityConverterClos
 import com.kolich.http.helpers.GsonClosures.GsonOrHttpFailureClosure;
 import com.kolich.http.helpers.StatusCodeAndHeaderClosures.StatusCodeOrHttpFailureClosure;
 import com.kolich.http.helpers.definitions.CustomEntityConverter;
+import com.kolich.http.helpers.definitions.CustomFailureEntityConverter;
+import com.kolich.http.helpers.definitions.CustomSuccessEntityConverter;
 
 public final class HavaloClient extends HavaloAbstractService {
 		
@@ -291,6 +293,26 @@ public final class HavaloClient extends HavaloAbstractService {
 			@Override
 			public HttpFailure failure(final HttpFailure failure) {
 				return failure;
+			}
+		}, path);
+	}
+	
+	public <F,S> HttpResponseEither<F,S> getObject(
+		final CustomSuccessEntityConverter<S> success,
+		final CustomFailureEntityConverter<F> failure,
+		final String... path) {
+		// Create a new custom entity converter using the provided
+		// success and failure handlers.  This acts as a convenience
+		// "interface" between the entity converters and units of work
+		// that represent separate success and failure handlers.
+		return getObject(new CustomEntityConverter<F,S>() {
+			@Override
+			public S success(final HttpSuccess hSuccess) throws Exception {
+				return success.success(hSuccess);
+			}
+			@Override
+			public F failure(final HttpFailure hFailure) {
+				return failure.failure(hFailure);
 			}
 		}, path);
 	}

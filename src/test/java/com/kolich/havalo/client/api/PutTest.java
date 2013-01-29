@@ -131,11 +131,33 @@ public class PutTest extends HavaloClientTestCase {
 		final HttpResponseEither<HttpFailure,FileObject> put = 
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
-					"");
+				"");
 		assertFalse("Failed to PUT object with no name.", put.success());
 		// Expected 405
 		assertTrue("Failed to PUT object with no name -- bad " +
 			"response code", put.left().getStatusCode() == SC_METHOD_NOT_ALLOWED);
+	}
+	
+	@Test
+	public void putEmptyObject() throws Exception {
+		// PUT a sample "empty" object (an object with a length of zero)
+		final HttpResponseEither<HttpFailure,FileObject> put = 
+			client_.putObject(new byte[]{}, "empty.json");
+		assertTrue("Failed to PUT empty object of zero length.", put.success());
+		// Call HEAD on the object to fetch and validate its meta data
+		final HttpResponseEither<HttpFailure,List<Header>> head =
+			client_.getObjectMetaData("empty.json");
+		// Validate that the Content-Length exists and is zero
+		final String length = getHeader(head.right(), HttpHeaders.CONTENT_LENGTH);
+		assertNotNull("Content-Length on empty object was null.", length);
+		assertTrue("Content-Length on empty object was not zero.",
+			Long.parseLong(length) == 0L);
+		// Tear down
+		final HttpResponseEither<HttpFailure,Integer> delete =
+			client_.deleteObject("empty.json");
+		assertTrue("Failed to DELETE empty object.", delete.success());
+		assertTrue("Failed to DELETE empty object -- bad " +
+			"response code", delete.right() == SC_NO_CONTENT);
 	}
 	
 	@Test
@@ -157,7 +179,7 @@ public class PutTest extends HavaloClientTestCase {
 		// Validate that the eTag we sent in was returned with the response
 		// meta data on the HEAD request to the API.
 		assertTrue("HEAD Fetched Etag does not match ETag delivered on PUT",
-			eTag.equals(getETagHeader(head.right())));
+			eTag.equals(getHeader(head.right(), HttpHeaders.ETAG)));
 		// Do another put with the correct If-Match ETag.
 		final HttpResponseEither<HttpFailure,FileObject> putETag =
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
@@ -194,7 +216,7 @@ public class PutTest extends HavaloClientTestCase {
 		// Validate that the eTag we sent in was returned with the response
 		// meta data on the HEAD request to the API.
 		assertTrue("HEAD Fetched Etag does not match ETag delivered on PUT",
-			eTag.equals(getETagHeader(head.right())));
+			eTag.equals(getHeader(head.right(), HttpHeaders.ETAG)));
 		// Do another put with a totally wrong ETag in the If-Match
 		// request header (SHOULD FAIL).
 		final HttpResponseEither<HttpFailure,FileObject> putETag =
@@ -223,9 +245,10 @@ public class PutTest extends HavaloClientTestCase {
 		return prefixes;
 	}
 	
-	private static final String getETagHeader(final List<Header> headers) {
+	private static final String getHeader(final List<Header> headers,
+		final String headerName) {
 		for(final Header h : headers) {
-			if(h.getName().equals(HttpHeaders.ETAG)) {
+			if(h.getName().equals(headerName)) {
 				return h.getValue();
 			}
 		}
