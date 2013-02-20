@@ -33,7 +33,7 @@ object Dependencies {
 
   // Internal dependencies
 
-  private val kolichHttpClient4Closure = "com.kolich" % "kolich-httpclient4-closure" % "0.0.9.1" % "compile"
+  private val kolichHttpClient4Closure = "com.kolich" % "kolich-httpclient4-closure" % "1.0" % "compile"
 
   // External dependencies
 
@@ -63,7 +63,7 @@ object HavaloClient extends Build {
   import Resolvers._
 
   private val aName = "havalo-client"
-  private val aVer = "1.1.2"
+  private val aVer = "1.1.3"
   private val aOrg = "com.kolich"
 
   lazy val havaloClient: Project = Project(

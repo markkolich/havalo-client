@@ -28,7 +28,7 @@ package com.kolich.havalo.client.service;
 
 import static com.kolich.common.entities.KolichCommonEntity.getDefaultGsonBuilder;
 import static com.kolich.common.util.URLEncodingUtils.urlEncode;
-import static com.kolich.http.KolichDefaultHttpClient.KolichHttpClientFactory.getNewInstanceWithProxySelector;
+import static com.kolich.http.blocking.KolichDefaultHttpClient.KolichHttpClientFactory.getNewInstanceWithProxySelector;
 import static org.apache.commons.io.IOUtils.copyLarge;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -56,16 +56,16 @@ import com.kolich.havalo.client.entities.FileObject;
 import com.kolich.havalo.client.entities.KeyPair;
 import com.kolich.havalo.client.entities.ObjectList;
 import com.kolich.havalo.client.signing.HavaloAbstractSigner;
-import com.kolich.http.HttpClient4Closure;
-import com.kolich.http.HttpClient4Closure.HttpFailure;
-import com.kolich.http.HttpClient4Closure.HttpResponseEither;
-import com.kolich.http.HttpClient4Closure.HttpSuccess;
-import com.kolich.http.helpers.EntityConverterClosures.CustomEntityConverterClosure;
-import com.kolich.http.helpers.GsonClosures.GsonOrHttpFailureClosure;
-import com.kolich.http.helpers.StatusCodeAndHeaderClosures.StatusCodeOrHttpFailureClosure;
-import com.kolich.http.helpers.definitions.CustomEntityConverter;
-import com.kolich.http.helpers.definitions.CustomFailureEntityConverter;
-import com.kolich.http.helpers.definitions.CustomSuccessEntityConverter;
+import com.kolich.http.blocking.HttpClient4Closure;
+import com.kolich.http.blocking.helpers.EntityConverterClosures.CustomEntityConverterClosure;
+import com.kolich.http.blocking.helpers.GsonClosures.GsonOrHttpFailureClosure;
+import com.kolich.http.blocking.helpers.StatusCodeAndHeaderClosures.StatusCodeOrHttpFailureClosure;
+import com.kolich.http.blocking.helpers.definitions.CustomEntityConverter;
+import com.kolich.http.blocking.helpers.definitions.CustomFailureEntityConverter;
+import com.kolich.http.blocking.helpers.definitions.CustomSuccessEntityConverter;
+import com.kolich.http.common.either.HttpResponseEither;
+import com.kolich.http.common.response.HttpFailure;
+import com.kolich.http.common.response.HttpSuccess;
 
 public final class HavaloClient extends HavaloAbstractService {
 		

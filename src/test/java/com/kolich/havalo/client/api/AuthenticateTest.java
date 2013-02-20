@@ -32,8 +32,8 @@ import org.junit.Test;
 
 import com.kolich.havalo.client.HavaloClientTestCase;
 import com.kolich.havalo.client.entities.KeyPair;
-import com.kolich.http.HttpClient4Closure.HttpFailure;
-import com.kolich.http.HttpClient4Closure.HttpResponseEither;
+import com.kolich.http.common.either.HttpResponseEither;
+import com.kolich.http.common.response.HttpFailure;
 
 public class AuthenticateTest extends HavaloClientTestCase {
 	
