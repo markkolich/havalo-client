@@ -36,9 +36,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.kolich.common.either.Either;
 import com.kolich.havalo.client.HavaloClientTestCase;
 import com.kolich.havalo.client.entities.FileObject;
-import com.kolich.http.common.either.HttpResponseEither;
 import com.kolich.http.common.response.HttpFailure;
 
 public class DeleteTest extends HavaloClientTestCase {
@@ -51,7 +51,7 @@ public class DeleteTest extends HavaloClientTestCase {
 	
 	@Before
 	public void setup() {
-		final HttpResponseEither<HttpFailure,FileObject> response =
+		final Either<HttpFailure,FileObject> response =
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				"test", "object.json");
 		assertTrue("Failed to PUT sample object.", response.success());		
@@ -66,7 +66,7 @@ public class DeleteTest extends HavaloClientTestCase {
 
 	@Test
 	public void delete() throws Exception {
-		final HttpResponseEither<HttpFailure,Integer> response =
+		final Either<HttpFailure,Integer> response =
 			client_.deleteObject("test", "object.json");
 		assertTrue("Failed to DELETE sample object.",
 			response.success());
@@ -76,7 +76,7 @@ public class DeleteTest extends HavaloClientTestCase {
 	
 	@Test
 	public void deleteNotFound() throws Exception {
-		final HttpResponseEither<HttpFailure,Integer> response =
+		final Either<HttpFailure,Integer> response =
 			client_.deleteObject("totalbougusobject.jpg");
 		assertFalse("Deletion status of non-existent object was successful?",
 			response.success());

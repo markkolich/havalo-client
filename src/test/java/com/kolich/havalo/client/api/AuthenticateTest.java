@@ -30,9 +30,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.kolich.common.either.Either;
 import com.kolich.havalo.client.HavaloClientTestCase;
 import com.kolich.havalo.client.entities.KeyPair;
-import com.kolich.http.common.either.HttpResponseEither;
 import com.kolich.http.common.response.HttpFailure;
 
 public class AuthenticateTest extends HavaloClientTestCase {
@@ -43,7 +43,7 @@ public class AuthenticateTest extends HavaloClientTestCase {
 	
 	@Test
 	public void authenticate() throws Exception {
-		final HttpResponseEither<HttpFailure,KeyPair> response =
+		final Either<HttpFailure,KeyPair> response =
 			client_.authenticate();
 		assertTrue("Authentication failed, miserably.", response.success());
 		assertTrue("Did not return a valid KeyPair entity.",

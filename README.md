@@ -6,7 +6,7 @@ Makes aggressive use of <a href="https://github.com/markkolich/kolich-httpclient
 
 ## Latest Version
 
-The latest stable version of this library is <a href="http://markkolich.github.com/repo/com/kolich/havalo-client/1.1.4">1.1.4</a>.
+The latest stable version of this library is <a href="http://markkolich.github.com/repo/com/kolich/havalo-client/1.2">1.2</a>.
 
 ## Resolvers
 
@@ -17,7 +17,7 @@ If you wish to use this artifact, you can easily add it to your existing Maven o
 ```scala
 resolvers += "Kolich repo" at "http://markkolich.github.com/repo"
 
-val havaloClient = "com.kolich" % "havalo-client" % "1.1.4" % "compile"
+val havaloClient = "com.kolich" % "havalo-client" % "1.2" % "compile"
 ```
 
 ### Maven
@@ -33,7 +33,7 @@ val havaloClient = "com.kolich" % "havalo-client" % "1.1.4" % "compile"
 <dependency>
   <groupId>com.kolich</groupId>
   <artifactId>havalo-client</artifactId>
-  <version>1.1.4</version>
+  <version>1.2</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -98,7 +98,7 @@ That's it, you're ready to make API requests.
 
 ### Using your HavaloClient
 
-All `HavaloClient` methods return an `HttpResponseEither<F,S>` &mdash; this return type represents *either* a left type `F` indicating failure, or a right type `S` indicating success.  For more details on this return type and how to use it, please refer to the <a href="https://github.com/markkolich/kolich-httpclient4-closure#functional-concepts">Functional Concepts overview</a> in my <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> library.
+All `HavaloClient` methods return an `com.kolich.common.either.Either<F,S>` &mdash; this return type represents *either* a left type `F` indicating failure, or a right type `S` indicating success.  For more details on this return type and how to use it, please refer to the <a href="https://github.com/markkolich/kolich-httpclient4-closure#functional-concepts">Functional Concepts overview</a> in my <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> library.
 
 #### authenticate()
 
@@ -107,7 +107,7 @@ Verify your Havalo API authentication credentials.
 Does nothing other than verifies your API key and secret.  This is most useful on application startup when you want to verify connectivity/access to the Havalo API before attempting to do actual work. 
 
 ```java
-final HttpResponseEither<HttpFailure,KeyPair> auth =
+final Either<HttpFailure,KeyPair> auth =
   client.authenticate();
 
 if(auth.success()) {
@@ -124,7 +124,7 @@ Create a new repository.
 Note that only **administrator** level API users can create new repositories.
 
 ```java
-final HttpResponseEither<HttpFailure,KeyPair> repo =
+final Either<HttpFailure,KeyPair> repo =
   client.createRepository();
 
 final KeyPair kp;
@@ -144,7 +144,7 @@ Note that only **administrator** level API users can delete repositories.
 ```java
 final UUID toDelete = ...; // The UUID of the repository to delete.
 
-final HttpResponseEither<HttpFailure,Integer> del =
+final Either<HttpFailure,Integer> del =
   client.deleteRepository(toDelete);
 
 if(del.success()) {
@@ -161,7 +161,7 @@ Note the `prefix` argument is optional &mdash; if omitted all objects will be re
 
 ```java
 // List all objects whose key starts with "foobar/baz"
-final HttpResponseEither<HttpFailure,ObjectList> list =
+final Either<HttpFailure,ObjectList> list =
   client.listObjects("foobar", "baz");
 
 if(list.success()) {
@@ -179,7 +179,7 @@ final OutputStream os = ...; // An existing and open OutputStream.
 
 // Get the object whose key is "foobar/baz/0.json" and stream its
 // bytes to the provided OutputStream.
-final HttpResponseEither<HttpFailure,List<Header>> get =
+final Either<HttpFailure,List<Header>> get =
   client.getObject(os, "foobar", "baz", "0.json");
 
 if(get.success()) {
@@ -268,7 +268,7 @@ Any HTTP headers sent with the object during a `PUT` are returned.  Note that th
 
 ```java
 // Get the meta data for the object whose key is "foobar/baz/1.xml"
-final HttpResponseEither<HttpFailure,List<Header>> meta =
+final Either<HttpFailure,List<Header>> meta =
   client.getObjectMetaData("foobar", "baz", "1.xml");
 
 if(meta.success()) {
@@ -291,7 +291,7 @@ final InputStream is = ...; // An existing and open InputStream.
 
 // Upload an object to path "baz/foobar.jpg" .. since it's a JPG
 // image, also send the relevant Content-Type with the request.
-final HttpResponseEither<HttpFailure,FileObject> upload =
+final Either<HttpFailure,FileObject> upload =
   client.putObject(is,
     // The number of bytes in this object.
     1024L,
@@ -320,7 +320,7 @@ Upload (`PUT`) an object to the given `path` using the provided `byte[]` array.
 final byte[] data = ...; // Some byte[] array of data.
 
 // Upload an object to path "cat"
-final HttpResponseEither<HttpFailure,FileObject> upload =
+final Either<HttpFailure,FileObject> upload =
   client.putObject(data, "cat");
 
 if(upload.success()) {
@@ -344,7 +344,7 @@ final String myHash = "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3";
 
 // Delete the object at path "foobar/cat" only if that object's hash
 // equals "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3".
-final HttpResponseEither<HttpFailure,Integer> delete =
+final Either<HttpFailure,Integer> delete =
   client.deleteObject(
     new Header[]{new BasicHeader(IF_MATCH, myHash)},
     "foobar", "cat");
@@ -379,7 +379,7 @@ Delete an object at the given `path`, ignoring the object's current hash.
 
 ```java
 // Delete the object at path "foobar/cat".
-final HttpResponseEither<HttpFailure,Integer> delete =
+final Either<HttpFailure,Integer> delete =
   client.deleteObject("foobar", "cat");
 
 if(delete.success()) {
@@ -408,15 +408,15 @@ Run SBT from within havalo-client.
     #~> cd havalo-client
     #~/havalo-client> sbt
     ...
-    havalo-client:1.1.4>
+    havalo-client:1.2>
 
 You will see a `havalo-client` SBT prompt once all dependencies are resolved and the project is loaded.
 
 In SBT, run `package` to compile and package the JAR.
 
-    havalo-client:1.1.4> package
+    havalo-client:1.2> package
     [info] Compiling 12 Java sources to ~/havalo-client/target/classes...
-    [info] Packaging ~/havalo-client/dist/havalo-client-1.1.4.jar ...
+    [info] Packaging ~/havalo-client/dist/havalo-client-1.2.jar ...
     [info] Done packaging.
     [success] Total time: 4 s, completed
 
@@ -424,7 +424,7 @@ Note the resulting JAR is placed into the **havalo-client/dist** directory.
 
 To create an Eclipse Java project for havalo-client, run `eclipse` in SBT.
 
-    havalo-client:1.1.4> eclipse
+    havalo-client:1.2> eclipse
     ...
     [info] Successfully created Eclipse project files for project(s):
     [info] havalo-client

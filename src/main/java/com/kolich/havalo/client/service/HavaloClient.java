@@ -52,6 +52,7 @@ import org.apache.http.protocol.HttpContext;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.kolich.common.either.Either;
 import com.kolich.havalo.client.entities.FileObject;
 import com.kolich.havalo.client.entities.KeyPair;
 import com.kolich.havalo.client.entities.ObjectList;
@@ -63,7 +64,6 @@ import com.kolich.http.blocking.helpers.StatusCodeAndHeaderClosures.StatusCodeOr
 import com.kolich.http.blocking.helpers.definitions.CustomEntityConverter;
 import com.kolich.http.blocking.helpers.definitions.CustomFailureEntityConverter;
 import com.kolich.http.blocking.helpers.definitions.CustomSuccessEntityConverter;
-import com.kolich.http.common.either.HttpResponseEither;
 import com.kolich.http.common.response.HttpFailure;
 import com.kolich.http.common.response.HttpSuccess;
 
@@ -143,8 +143,8 @@ public final class HavaloClient extends HavaloAbstractService {
 			final HttpContext context) {
 			return expectStatus_ == response.getStatusLine().getStatusCode();
 		}
-		public final HttpResponseEither<HttpFailure,T> head(
-			final String action, final String... path) {
+		public final Either<HttpFailure,T> head(final String action,
+			final String... path) {
 			return super.head(buildPath(action, path));
 		}
 	}
@@ -167,17 +167,15 @@ public final class HavaloClient extends HavaloAbstractService {
 			return expectStatus_ == response.getStatusLine().getStatusCode();
 		}
 		@Override
-		public final HttpResponseEither<HttpFailure,T> get(
-			final String action) {
+		public final Either<HttpFailure,T> get(final String action) {
 			return super.get(buildPath(action));
 		}
 		@Override
-		public final HttpResponseEither<HttpFailure,T> post(
-			final String action) {
+		public final Either<HttpFailure,T> post(final String action) {
 			return super.post(buildPath(action));
 		}
-		public final HttpResponseEither<HttpFailure,T> put(
-			final String action, final String... path) {
+		public final Either<HttpFailure,T> put(final String action,
+			final String... path) {
 			return super.put(buildPath(action, path));
 		}
 	}
@@ -199,7 +197,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			final HttpContext context) {
 			return expectStatus_ == response.getStatusLine().getStatusCode();
 		}
-		public final HttpResponseEither<HttpFailure,Integer> delete(
+		public final Either<HttpFailure,Integer> delete(
 			final String action, final String... path) {
 			return super.delete(buildPath(action, path));
 		}
@@ -223,13 +221,13 @@ public final class HavaloClient extends HavaloAbstractService {
 			final HttpContext context) {
 			return expectStatus_ == response.getStatusLine().getStatusCode();
 		}
-		public final HttpResponseEither<F,S> get(final String action,
+		public final Either<F,S> get(final String action,
 			final String... path) {
 			return super.get(buildPath(action, path));
 		}
 	}
 	
-	public HttpResponseEither<HttpFailure,KeyPair> authenticate() {
+	public Either<HttpFailure,KeyPair> authenticate() {
 		// The POST of auth credentials is only successful when the
 		// resulting status code is a 200 OK.  Any other status
 		// code on the response is failure.
@@ -237,7 +235,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			KeyPair.class, SC_OK){}.post(API_ACTION_AUTHENTICATE);
 	}
 	
-	public HttpResponseEither<HttpFailure,KeyPair> createRepository() {
+	public Either<HttpFailure,KeyPair> createRepository() {
 		// The POST of a repository is only successful when the
 		// resulting status code is a 201 Created.  Any other status
 		// code on the response is failure.
@@ -245,7 +243,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			KeyPair.class, SC_CREATED){}.post(API_ACTION_REPOSITORY);
 	}
 	
-	public HttpResponseEither<HttpFailure,Integer> deleteRepository(
+	public Either<HttpFailure,Integer> deleteRepository(
 		final UUID repoId) {
 		// The DELETE of a repository is only successful when the
 		// resulting status code is a 204 No Content.  Any other
@@ -254,7 +252,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			.delete(API_ACTION_REPOSITORY, repoId.toString());
 	}
 	
-	public HttpResponseEither<HttpFailure,ObjectList> listObjects(
+	public Either<HttpFailure,ObjectList> listObjects(
 		final String... path) {
 		// The listing of objects is only successful when the
 		// resulting status code is a 200 OK.  Any other status
@@ -274,11 +272,11 @@ public final class HavaloClient extends HavaloAbstractService {
 		}.get(API_ACTION_REPOSITORY);
 	}
 	
-	public HttpResponseEither<HttpFailure,ObjectList> listObjects() {
+	public Either<HttpFailure,ObjectList> listObjects() {
 		return listObjects((String[])null);
 	}
 	
-	public HttpResponseEither<HttpFailure,List<Header>> getObject(
+	public Either<HttpFailure,List<Header>> getObject(
 		final OutputStream destination, final String... path) {
 		return getObject(new CustomEntityConverter<HttpFailure,List<Header>>() {
 			@Override
@@ -297,7 +295,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		}, path);
 	}
 	
-	public <F,S> HttpResponseEither<F,S> getObject(
+	public <F,S> Either<F,S> getObject(
 		final CustomSuccessEntityConverter<S> success,
 		final CustomFailureEntityConverter<F> failure,
 		final String... path) {
@@ -317,8 +315,8 @@ public final class HavaloClient extends HavaloAbstractService {
 		}, path);
 	}
 	
-	public <F,S> HttpResponseEither<F,S> getObject(
-		final CustomEntityConverter<F,S> converter, final String... path) {
+	public <F,S> Either<F,S> getObject(final CustomEntityConverter<F,S> converter,
+		final String... path) {
 		// The GET of an object is only successful when the
 		// resulting status code is a 200 OK.  Any other status
 		// code on the response is failure.
@@ -326,7 +324,7 @@ public final class HavaloClient extends HavaloAbstractService {
 			SC_OK){}.get(API_ACTION_OBJECT, path);
 	}
 
-	public HttpResponseEither<HttpFailure,List<Header>> getObjectMetaData(
+	public Either<HttpFailure,List<Header>> getObjectMetaData(
 		final String... path) {
 		// The HEAD of an object is only successful when the
 		// resulting status code is a 200 OK.  Any other status
@@ -339,9 +337,8 @@ public final class HavaloClient extends HavaloAbstractService {
 		}.head(API_ACTION_OBJECT, path);
 	}
 	
-	public HttpResponseEither<HttpFailure,FileObject> putObject(
-		final InputStream input, final long contentLength,
-		final Header[] headers, final String... path) {
+	public Either<HttpFailure,FileObject> putObject(final InputStream input,
+		final long contentLength, final Header[] headers, final String... path) {
 		// The upload of an object is only successful when the
 		// resulting status code is a 200 OK.  Any other status
 		// code on the response is failure.
@@ -359,19 +356,19 @@ public final class HavaloClient extends HavaloAbstractService {
 		}.put(API_ACTION_OBJECT, path);
 	}
 			
-	public HttpResponseEither<HttpFailure,FileObject> putObject(
-		final byte[] input, final Header[] headers, final String... path) {
+	public Either<HttpFailure,FileObject> putObject(final byte[] input,
+		final Header[] headers, final String... path) {
 		final InputStream is = new ByteArrayInputStream(input);
 		return putObject(is, (long)input.length, headers, path);
 	}
 	
-	public HttpResponseEither<HttpFailure,FileObject> putObject(
-		final byte[] input, final String... path) {
+	public Either<HttpFailure,FileObject> putObject(final byte[] input,
+		final String... path) {
 		return putObject(input, null, path);
 	}
 		
-	public HttpResponseEither<HttpFailure,Integer> deleteObject(
-		final Header[] headers, final String... path) {
+	public Either<HttpFailure,Integer> deleteObject(final Header[] headers,
+		final String... path) {
 		// The deletion of an object is only successful when the
 		// resulting status code is a 204 No Content.  Any other status
 		// code on the response is failure.
@@ -386,8 +383,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		}.delete(API_ACTION_OBJECT, path);
 	}
 	
-	public HttpResponseEither<HttpFailure,Integer> deleteObject(
-		final String... path) {
+	public Either<HttpFailure,Integer> deleteObject(final String... path) {
 		return deleteObject(null, path);
 	}
 	

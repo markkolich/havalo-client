@@ -38,11 +38,11 @@ import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
 import org.junit.Test;
 
+import com.kolich.common.either.Either;
 import com.kolich.havalo.client.HavaloClientTestCase;
 import com.kolich.havalo.client.entities.FileObject;
 import com.kolich.havalo.client.entities.KeyPair;
 import com.kolich.havalo.client.entities.ObjectList;
-import com.kolich.http.common.either.HttpResponseEither;
 import com.kolich.http.common.response.HttpFailure;
 
 public class RepositoryTest extends HavaloClientTestCase {
@@ -56,11 +56,11 @@ public class RepositoryTest extends HavaloClientTestCase {
 	@Test
 	public void createAndDeleteRepository() throws Exception {
 		// Create a sample repository
-		final HttpResponseEither<HttpFailure,KeyPair> create =
+		final Either<HttpFailure,KeyPair> create =
 			client_.createRepository();
 		assertTrue("Failed to create repository.", create.success());
 		// Tear down, delete it
-		final HttpResponseEither<HttpFailure,Integer> delete =
+		final Either<HttpFailure,Integer> delete =
 			client_.deleteRepository(create.right().getKey());
 		assertTrue("Failed to delete repository.", delete.success());
 	}
@@ -68,7 +68,7 @@ public class RepositoryTest extends HavaloClientTestCase {
 	@Test
 	public void deleteAdminRepository() throws Exception {
 		// Attempt to delete the "admin" repository, should fail.
-		final HttpResponseEither<HttpFailure,Integer> delete =
+		final Either<HttpFailure,Integer> delete =
 			client_.deleteRepository(UUID.fromString(apiKey_));
 		assertFalse("Uh, successfully deleted admin repository?",
 			delete.success());
@@ -83,7 +83,7 @@ public class RepositoryTest extends HavaloClientTestCase {
 	@Test
 	public void deleteNonExistentRepository() throws Exception {
 		// Attempt to delete a non-existent repository, should fail.
-		final HttpResponseEither<HttpFailure,Integer> delete =
+		final Either<HttpFailure,Integer> delete =
 			client_.deleteRepository(UUID.randomUUID());
 		assertFalse("Uh, successfully deleted non-existent repository?",
 			delete.success());
@@ -118,7 +118,7 @@ public class RepositoryTest extends HavaloClientTestCase {
 	}
 	
 	private final void putSampleObjects() {
-		HttpResponseEither<HttpFailure,FileObject> put = null;
+		Either<HttpFailure,FileObject> put = null;
 		// Sample objects
 		put = client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 			new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
@@ -135,14 +135,14 @@ public class RepositoryTest extends HavaloClientTestCase {
 	}
 	
 	private final ObjectList listObjects(final String... path) throws Exception {
-		HttpResponseEither<HttpFailure, ObjectList> list =
+		Either<HttpFailure, ObjectList> list =
 			client_.listObjects(path);
 		assertTrue("Failed to list objects in repository.", list.success());
 		return list.right();
 	}
 	
 	private final void deleteSampleObjects() {
-		HttpResponseEither<HttpFailure,Integer> delete = null;
+		Either<HttpFailure,Integer> delete = null;
 		// Delete sample objects.
 		delete = client_.deleteObject("json", "object");
 		assertTrue("Failed to DELETE sample object #1.", delete.success());

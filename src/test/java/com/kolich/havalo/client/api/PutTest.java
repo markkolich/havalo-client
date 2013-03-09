@@ -46,9 +46,9 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicHeader;
 import org.junit.Test;
 
+import com.kolich.common.either.Either;
 import com.kolich.havalo.client.HavaloClientTestCase;
 import com.kolich.havalo.client.entities.FileObject;
-import com.kolich.http.common.either.HttpResponseEither;
 import com.kolich.http.common.response.HttpFailure;
 
 public class PutTest extends HavaloClientTestCase {
@@ -63,14 +63,14 @@ public class PutTest extends HavaloClientTestCase {
 	@Test
 	public void put() throws Exception {
 		// PUT a sample object
-		final HttpResponseEither<HttpFailure,FileObject> put = 
+		final Either<HttpFailure,FileObject> put = 
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 				"test", "jsonObject/hmm");
 		assertTrue("Failed to PUT sample object.", put.success());
 		// GET the object to make sure it actually worked.
 		final ByteArrayOutputStream os = new ByteArrayOutputStream();
-		final HttpResponseEither<HttpFailure,List<Header>> get =
+		final Either<HttpFailure,List<Header>> get =
 			client_.getObject(os, "test", "jsonObject/hmm");
 		assertTrue("Failed to GET sample object after PUT.", get.success());
 		assertTrue("Failed to GET sample object after PUT -- no headers!?",
@@ -80,7 +80,7 @@ public class PutTest extends HavaloClientTestCase {
 			"sent on PUT (sent="+ SAMPLE_JSON_OBJECT + ", received=" +
 				receivedString + ")", receivedString.equals(SAMPLE_JSON_OBJECT));
 		// Tear down
-		final HttpResponseEither<HttpFailure,Integer> delete = 
+		final Either<HttpFailure,Integer> delete = 
 			client_.deleteObject("test", "jsonObject/hmm");		
 		assertTrue("Failed to DELETE sample object.", delete.success());
 	}
@@ -93,13 +93,13 @@ public class PutTest extends HavaloClientTestCase {
 		// Apparently the max header size in Jetty is less around 4KB
 		final String[] prefixes = getRandomPrefix(200);
 		// PUT a sample object
-		final HttpResponseEither<HttpFailure,FileObject> put = 
+		final Either<HttpFailure,FileObject> put = 
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 					prefixes);
 		assertTrue("Failed to PUT long sample object.", put.success());
 		// Tear down
-		final HttpResponseEither<HttpFailure,Integer> delete =
+		final Either<HttpFailure,Integer> delete =
 			client_.deleteObject(prefixes);
 		assertTrue("Failed to DELETE long sample object.", delete.success());
 		assertTrue("Failed to DELETE long sample object -- bad response code",
@@ -111,13 +111,13 @@ public class PutTest extends HavaloClientTestCase {
 		final String[] prefixes = new String[]{"   ////// ", "kewl",
 			"  +++    !!//  should still totally work  ++++ ^^^^ && foobar"}; 
 		// PUT a sample object
-		final HttpResponseEither<HttpFailure,FileObject> put = 
+		final Either<HttpFailure,FileObject> put = 
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 					prefixes);
 		assertTrue("Failed to PUT object with crap in name.", put.success());
 		// Tear down
-		final HttpResponseEither<HttpFailure,Integer> delete =
+		final Either<HttpFailure,Integer> delete =
 			client_.deleteObject(prefixes);
 		assertTrue("Failed to DELETE object with crap in name.",
 			delete.success());
@@ -128,7 +128,7 @@ public class PutTest extends HavaloClientTestCase {
 	@Test
 	public void putNoName() throws Exception {
 		// PUT a sample object
-		final HttpResponseEither<HttpFailure,FileObject> put = 
+		final Either<HttpFailure,FileObject> put = 
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 				"");
@@ -141,11 +141,11 @@ public class PutTest extends HavaloClientTestCase {
 	@Test
 	public void putEmptyObject() throws Exception {
 		// PUT a sample "empty" object (an object with a length of zero)
-		final HttpResponseEither<HttpFailure,FileObject> put = 
+		final Either<HttpFailure,FileObject> put = 
 			client_.putObject(new byte[]{}, "empty.json");
 		assertTrue("Failed to PUT empty object of zero length.", put.success());
 		// Call HEAD on the object to fetch and validate its meta data
-		final HttpResponseEither<HttpFailure,List<Header>> head =
+		final Either<HttpFailure,List<Header>> head =
 			client_.getObjectMetaData("empty.json");
 		// Validate that the Content-Length exists and is zero
 		final String length = getHeader(head.right(), HttpHeaders.CONTENT_LENGTH);
@@ -153,7 +153,7 @@ public class PutTest extends HavaloClientTestCase {
 		assertTrue("Content-Length on empty object was not zero.",
 			Long.parseLong(length) == 0L);
 		// Tear down
-		final HttpResponseEither<HttpFailure,Integer> delete =
+		final Either<HttpFailure,Integer> delete =
 			client_.deleteObject("empty.json");
 		assertTrue("Failed to DELETE empty object.", delete.success());
 		assertTrue("Failed to DELETE empty object -- bad " +
@@ -164,7 +164,7 @@ public class PutTest extends HavaloClientTestCase {
 	public void putWithCorrectETag() throws Exception {
 		// PUT a sample object
 		final String[] prefixes = getRandomPrefix(50);
-		final HttpResponseEither<HttpFailure,FileObject> put =
+		final Either<HttpFailure,FileObject> put =
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 					prefixes);
@@ -173,7 +173,7 @@ public class PutTest extends HavaloClientTestCase {
 		final String eTag = put.right().getFirstHeader(HttpHeaders.ETAG);
 		assertNotNull("ETag header on PUT was null.", eTag);
 		// Call HEAD on the object to fetch and validate its meta data.
-		final HttpResponseEither<HttpFailure,List<Header>> head =
+		final Either<HttpFailure,List<Header>> head =
 			client_.getObjectMetaData(prefixes);
 		assertTrue("Failed to HEAD sample object.", head.success());
 		// Validate that the eTag we sent in was returned with the response
@@ -181,7 +181,7 @@ public class PutTest extends HavaloClientTestCase {
 		assertTrue("HEAD Fetched Etag does not match ETag delivered on PUT",
 			eTag.equals(getHeader(head.right(), HttpHeaders.ETAG)));
 		// Do another put with the correct If-Match ETag.
-		final HttpResponseEither<HttpFailure,FileObject> putETag =
+		final Either<HttpFailure,FileObject> putETag =
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json"),
 					// Object in repo must match incoming ETag
@@ -189,7 +189,7 @@ public class PutTest extends HavaloClientTestCase {
 					prefixes);
 		assertTrue("Failed to PUT sample object with correct eTag.",
 			putETag.success());
-		final HttpResponseEither<HttpFailure,Integer> delete =
+		final Either<HttpFailure,Integer> delete =
 			client_.deleteObject(prefixes);
 		assertTrue("Failed to DELETE object with crap in name.",
 			delete.success());
@@ -201,7 +201,7 @@ public class PutTest extends HavaloClientTestCase {
 	public void putWithConflictingETag() throws Exception {
 		// PUT a sample object
 		final String[] prefixes = getRandomPrefix(50);
-		final HttpResponseEither<HttpFailure,FileObject> put =
+		final Either<HttpFailure,FileObject> put =
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 					prefixes);
@@ -210,7 +210,7 @@ public class PutTest extends HavaloClientTestCase {
 		final String eTag = put.right().getFirstHeader(HttpHeaders.ETAG);
 		assertNotNull("ETag header on PUT was null.", eTag);
 		// Call HEAD on the object to fetch and validate its meta data.
-		final HttpResponseEither<HttpFailure,List<Header>> head =
+		final Either<HttpFailure,List<Header>> head =
 			client_.getObjectMetaData(prefixes);
 		assertTrue("Failed to HEAD sample object.", head.success());
 		// Validate that the eTag we sent in was returned with the response
@@ -219,7 +219,7 @@ public class PutTest extends HavaloClientTestCase {
 			eTag.equals(getHeader(head.right(), HttpHeaders.ETAG)));
 		// Do another put with a totally wrong ETag in the If-Match
 		// request header (SHOULD FAIL).
-		final HttpResponseEither<HttpFailure,FileObject> putETag =
+		final Either<HttpFailure,FileObject> putETag =
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json"),
 					// Totally non-sense ETag -- should fail.
@@ -229,7 +229,7 @@ public class PutTest extends HavaloClientTestCase {
 		assertTrue("PUT with known bad ETag did not return a 409 " +
 			"Conflict as expected.", putETag.left().getStatusCode() == SC_CONFLICT);
 		// Tear down
-		final HttpResponseEither<HttpFailure,Integer> delete =
+		final Either<HttpFailure,Integer> delete =
 			client_.deleteObject(prefixes);
 		assertTrue("Failed to DELETE object with crap in name.",
 			delete.success());
