@@ -30,7 +30,6 @@ import static com.kolich.common.entities.KolichCommonEntity.getDefaultGsonBuilde
 import static com.kolich.common.util.URLEncodingUtils.urlEncode;
 import static com.kolich.http.blocking.KolichDefaultHttpClient.KolichHttpClientFactory.getNewInstanceWithProxySelector;
 import static org.apache.commons.io.IOUtils.copyLarge;
-import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 
@@ -240,7 +239,7 @@ public final class HavaloClient extends HavaloAbstractService {
 		// resulting status code is a 201 Created.  Any other status
 		// code on the response is failure.
 		return new HavaloGsonClosure<KeyPair>(client_, gson_.create(),
-			KeyPair.class, SC_CREATED){}.post(API_ACTION_REPOSITORY);
+			KeyPair.class, SC_OK){}.post(API_ACTION_REPOSITORY);
 	}
 	
 	public Either<HttpFailure,Integer> deleteRepository(
