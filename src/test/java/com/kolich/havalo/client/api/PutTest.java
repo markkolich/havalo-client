@@ -29,10 +29,12 @@ package com.kolich.havalo.client.api;
 import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
 import static org.apache.commons.codec.binary.StringUtils.newStringUtf8;
 import static org.apache.commons.lang3.RandomStringUtils.randomAscii;
+import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.apache.http.HttpHeaders.ETAG;
 import static org.apache.http.HttpHeaders.IF_MATCH;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CONFLICT;
-import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -42,7 +44,6 @@ import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 import org.apache.http.Header;
-import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicHeader;
 import org.junit.Test;
 
@@ -133,9 +134,9 @@ public class PutTest extends HavaloClientTestCase {
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 				"");
 		assertFalse("Failed to PUT object with no name.", put.success());
-		// Expected 405
+		// Expected 400 Bad Request
 		assertTrue("Failed to PUT object with no name -- bad " +
-			"response code", put.left().getStatusCode() == SC_METHOD_NOT_ALLOWED);
+			"response code", put.left().getStatusCode() == SC_BAD_REQUEST);
 	}
 	
 	@Test
@@ -148,7 +149,7 @@ public class PutTest extends HavaloClientTestCase {
 		final Either<HttpFailure,List<Header>> head =
 			client_.getObjectMetaData("empty.json");
 		// Validate that the Content-Length exists and is zero
-		final String length = getHeader(head.right(), HttpHeaders.CONTENT_LENGTH);
+		final String length = getHeader(head.right(), CONTENT_LENGTH);
 		assertNotNull("Content-Length on empty object was null.", length);
 		assertTrue("Content-Length on empty object was not zero.",
 			Long.parseLong(length) == 0L);
@@ -170,7 +171,7 @@ public class PutTest extends HavaloClientTestCase {
 					prefixes);
 		assertTrue("Failed to PUT sample object.", put.success());
 		// Extract the eTag from the resulting PUT
-		final String eTag = put.right().getFirstHeader(HttpHeaders.ETAG);
+		final String eTag = put.right().getFirstHeader(ETAG);
 		assertNotNull("ETag header on PUT was null.", eTag);
 		// Call HEAD on the object to fetch and validate its meta data.
 		final Either<HttpFailure,List<Header>> head =
@@ -179,7 +180,7 @@ public class PutTest extends HavaloClientTestCase {
 		// Validate that the eTag we sent in was returned with the response
 		// meta data on the HEAD request to the API.
 		assertTrue("HEAD Fetched Etag does not match ETag delivered on PUT",
-			eTag.equals(getHeader(head.right(), HttpHeaders.ETAG)));
+			eTag.equals(getHeader(head.right(), ETAG)));
 		// Do another put with the correct If-Match ETag.
 		final Either<HttpFailure,FileObject> putETag =
 			client_.putObject(getBytesUtf8(SAMPLE_JSON_OBJECT),
@@ -207,7 +208,7 @@ public class PutTest extends HavaloClientTestCase {
 					prefixes);
 		assertTrue("Failed to PUT sample object.", put.success());
 		// Extract the eTag from the resulting PUT
-		final String eTag = put.right().getFirstHeader(HttpHeaders.ETAG);
+		final String eTag = put.right().getFirstHeader(ETAG);
 		assertNotNull("ETag header on PUT was null.", eTag);
 		// Call HEAD on the object to fetch and validate its meta data.
 		final Either<HttpFailure,List<Header>> head =
@@ -216,7 +217,7 @@ public class PutTest extends HavaloClientTestCase {
 		// Validate that the eTag we sent in was returned with the response
 		// meta data on the HEAD request to the API.
 		assertTrue("HEAD Fetched Etag does not match ETag delivered on PUT",
-			eTag.equals(getHeader(head.right(), HttpHeaders.ETAG)));
+			eTag.equals(getHeader(head.right(), ETAG)));
 		// Do another put with a totally wrong ETag in the If-Match
 		// request header (SHOULD FAIL).
 		final Either<HttpFailure,FileObject> putETag =
