@@ -80,7 +80,7 @@ Finally, if you're using Spring, your web-application can also instantiate a `Ha
 ```xml
 <!-- An HttpClient instance, either created by the KolichHttpClientFactory or on your own. -->
 <bean id="YourHttpClient"
-  class="com.kolich.http.KolichDefaultHttpClient.KolichHttpClientFactory"
+  class="com.kolich.http.blocking.KolichDefaultHttpClient.KolichHttpClientFactory"
   factory-method="getNewInstanceWithProxySelector">
   <constructor-arg><value>Some kewl user-agent</value></constructor-arg>
 </bean>
@@ -197,7 +197,7 @@ if(get.success()) {
 Or, pass a `CustomEntityConverter` provided by the <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> to stream the object "elsewhere" on success, or handle a failure on error.  This allows you to extract meta-data about the object from Havalo before streaming the object out to a consumer &mdash; properties like the HTTP `Content-Length` or `Content-Type` of the object are only available on a `GET` operation if you use a `CustomEntityConverter`.  
 
 ```java
-import com.kolich.http.helpers.definitions.CustomEntityConverter;
+import com.kolich.http.blocking.helpers.definitions.CustomEntityConverter;
 
 import org.apache.commons.io.IOUtils;
 
@@ -235,8 +235,8 @@ client.getObject(new CustomEntityConverter<HttpFailure,Long>() {
 Or, even further, you can pass a `CustomSuccessEntityConverter<S>` and a `CustomFailureEntityConverter<F>` to define separate units of work to be "called" on either success or failure.
 
 ```java
-import com.kolich.http.helpers.definitions.CustomFailureEntityConverter;
-import com.kolich.http.helpers.definitions.CustomSuccessEntityConverter;
+import com.kolich.http.blocking.helpers.definitions.CustomFailureEntityConverter;
+import com.kolich.http.blocking.helpers.definitions.CustomSuccessEntityConverter;
 
 client.getObject(
   // Success converter
