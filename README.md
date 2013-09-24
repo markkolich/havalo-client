@@ -1,8 +1,10 @@
 # havalo-client
 
-A client for the <a href="https://github.com/markkolich/havalo#api">Havalo K,V store RESTful API</a>.  Written in Java, but Scala compatible.
+A client for the <a href="https://github.com/markkolich/havalo#api">Havalo K,V store RESTful API</a>.
 
 Makes aggressive use of <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> backed by the <a href="http://hc.apache.org/">Apache Commons HttpClient 4.x</a>.  Also, uses <a href="http://code.google.com/p/google-gson/">Google's GSON library</a> for all JSON related "stuph" under-the-hood.
+
+Written in Java 7, but can be cross compiled against Java 6 if desired.
 
 ## Latest Version
 
