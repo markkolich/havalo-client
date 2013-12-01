@@ -33,8 +33,8 @@ import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpHeaders.ETAG;
 import static org.apache.http.HttpHeaders.IF_MATCH;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CONFLICT;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -134,9 +134,9 @@ public class PutTest extends HavaloClientTestCase {
 				new Header[]{new BasicHeader(CONTENT_TYPE, "application/json")},
 				"");
 		assertFalse("Failed to PUT object with no name.", put.success());
-		// Expected 400 Bad Request
+		// Expected 404 Not Found
 		assertTrue("Failed to PUT object with no name -- bad " +
-			"response code", put.left().getStatusCode() == SC_BAD_REQUEST);
+			"response code", put.left().getStatusCode() == SC_NOT_FOUND);
 	}
 	
 	@Test
