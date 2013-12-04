@@ -244,14 +244,14 @@ client.getObject(
   // Success converter
   new CustomSuccessEntityConverter<S>() {
     @Override
-    public Long success(final HttpSuccess success) throws Exception {
+    public S success(final HttpSuccess success) throws Exception {
       // Do something on success, return type 'S'
     }
   },
   // Failure converter
   new CustomFailureEntityConverter<F>() {
     @Override
-    public HttpFailure failure(final HttpFailure failure) {
+    public F failure(final HttpFailure failure) {
       // Do something on failure, return type 'F' 
     }
   },
