@@ -26,32 +26,9 @@
 
 package com.kolich.havalo.client.service;
 
-import static com.kolich.common.entities.KolichCommonEntity.getDefaultGsonBuilder;
-import static com.kolich.common.util.URLEncodingUtils.urlEncode;
-import static com.kolich.http.blocking.KolichDefaultHttpClient.KolichHttpClientFactory.getNewInstanceWithProxySelector;
-import static org.apache.commons.io.IOUtils.copyLarge;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.protocol.HttpContext;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.kolich.common.either.Either;
+import com.kolich.common.functional.either.Either;
 import com.kolich.havalo.client.entities.FileObject;
 import com.kolich.havalo.client.entities.KeyPair;
 import com.kolich.havalo.client.entities.ObjectList;
@@ -65,6 +42,28 @@ import com.kolich.http.blocking.helpers.definitions.CustomFailureEntityConverter
 import com.kolich.http.blocking.helpers.definitions.CustomSuccessEntityConverter;
 import com.kolich.http.common.response.HttpFailure;
 import com.kolich.http.common.response.HttpSuccess;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.protocol.HttpContext;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import static com.kolich.common.entities.KolichCommonEntity.getDefaultGsonBuilder;
+import static com.kolich.common.util.URLEncodingUtils.urlEncode;
+import static com.kolich.http.blocking.KolichDefaultHttpClient.KolichHttpClientFactory.getNewInstanceWithProxySelector;
+import static org.apache.commons.io.IOUtils.copyLarge;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
 
 public final class HavaloClient extends HavaloAbstractService {
 		

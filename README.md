@@ -8,7 +8,7 @@ Written in Java 7, but can be cross compiled against Java 6 if desired.
 
 ## Latest Version
 
-The latest stable version of this library is <a href="http://markkolich.github.com/repo/com/kolich/havalo-client/1.3">1.3</a>.
+The latest stable version of this library is <a href="http://markkolich.github.com/repo/com/kolich/havalo-client/1.3.1">1.3.1</a>.
 
 ## Resolvers
 
@@ -19,7 +19,7 @@ If you wish to use this artifact, you can easily add it to your existing Maven o
 ```scala
 resolvers += "Kolich repo" at "http://markkolich.github.com/repo"
 
-val havaloClient = "com.kolich" % "havalo-client" % "1.3" % "compile"
+val havaloClient = "com.kolich" % "havalo-client" % "1.3.1" % "compile"
 ```
 
 ### Maven
@@ -35,7 +35,7 @@ val havaloClient = "com.kolich" % "havalo-client" % "1.3" % "compile"
 <dependency>
   <groupId>com.kolich</groupId>
   <artifactId>havalo-client</artifactId>
-  <version>1.3</version>
+  <version>1.3.1</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -410,15 +410,15 @@ Run SBT from within havalo-client.
     #~> cd havalo-client
     #~/havalo-client> sbt
     ...
-    havalo-client:1.3>
+    havalo-client:1.3.1>
 
 You will see a `havalo-client` SBT prompt once all dependencies are resolved and the project is loaded.
 
 In SBT, run `package` to compile and package the JAR.
 
-    havalo-client:1.3> package
+    havalo-client:1.3.1> package
     [info] Compiling 12 Java sources to ~/havalo-client/target/classes...
-    [info] Packaging ~/havalo-client/dist/havalo-client-1.3.jar ...
+    [info] Packaging ~/havalo-client/dist/havalo-client-1.3.1.jar ...
     [info] Done packaging.
     [success] Total time: 4 s, completed
 
@@ -426,7 +426,7 @@ Note the resulting JAR is placed into the **havalo-client/dist** directory.
 
 To create an Eclipse Java project for havalo-client, run `eclipse` in SBT.
 
-    havalo-client:1.3> eclipse
+    havalo-client:1.3.1> eclipse
     ...
     [info] Successfully created Eclipse project files for project(s):
     [info] havalo-client
