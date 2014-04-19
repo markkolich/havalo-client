@@ -1,6 +1,6 @@
-# havalo-client
+# havalo-kvs-client
 
-A client for the <a href="https://github.com/markkolich/havalo#api">Havalo K,V store RESTful API</a>.
+A client for the <a href="https://github.com/markkolich/havalo-kvs#api">Havalo K,V store RESTful API</a>.
 
 Makes aggressive use of <a href="https://github.com/markkolich/kolich-httpclient4-closure">kolich-httpclient4-closure</a> backed by the <a href="http://hc.apache.org/">Apache Commons HttpClient 4.x</a>.  Also, uses <a href="http://code.google.com/p/google-gson/">Google's GSON library</a> for all JSON related "stuph" under-the-hood.
 
@@ -8,7 +8,7 @@ Written in Java 7, but can be cross compiled against Java 6 if desired.
 
 ## Latest Version
 
-The latest stable version of this library is <a href="http://markkolich.github.com/repo/com/kolich/havalo-client/1.3.1">1.3.1</a>.
+The latest stable version of this library is <a href="http://markkolich.github.io/repo/com/kolich/havalo-kvs-client/1.4">1.4</a>.
 
 ## Resolvers
 
@@ -19,7 +19,7 @@ If you wish to use this artifact, you can easily add it to your existing Maven o
 ```scala
 resolvers += "Kolich repo" at "http://markkolich.github.com/repo"
 
-val havaloClient = "com.kolich" % "havalo-client" % "1.3.1" % "compile"
+val havaloClient = "com.kolich" % "havalo-kvs-client" % "1.4" % "compile"
 ```
 
 ### Maven
@@ -28,14 +28,14 @@ val havaloClient = "com.kolich" % "havalo-client" % "1.3.1" % "compile"
 <repository>
   <id>Kolichrepo</id>
   <name>Kolich repo</name>
-  <url>http://markkolich.github.com/repo/</url>
+  <url>http://markkolich.github.io/repo/</url>
   <layout>default</layout>
 </repository>
 
 <dependency>
   <groupId>com.kolich</groupId>
-  <artifactId>havalo-client</artifactId>
-  <version>1.3.1</version>
+  <artifactId>havalo-kvs-client</artifactId>
+  <version>1.4</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -395,41 +395,41 @@ if(delete.success()) {
 
 ## Building
 
-This Java library and its dependencies are built and managed using <a href="https://github.com/harrah/xsbt">SBT 0.12.2</a>.
+This Java library and its dependencies are built and managed using <a href="https://github.com/harrah/xsbt">SBT</a>.
 
-To clone and build havalo-client, you must have <a href="http://www.scala-sbt.org/release/docs/Getting-Started/Setup">SBT installed and configured on your computer</a>.
+To clone and build havalo-kvs-client, you must have <a href="http://www.scala-sbt.org/release/docs/Getting-Started/Setup">SBT installed and configured on your computer</a>.
 
-The havalo-client SBT <a href="https://github.com/markkolich/havalo-client/blob/master/project/Build.scala">Build.scala</a> file is highly customized to build and package this Java artifact.  It's written to manage all dependencies and versioning.
+The havalo-kvs-client SBT <a href="https://github.com/markkolich/havalo-kvs-client/blob/master/project/Build.scala">Build.scala</a> file is highly customized to build and package this Java artifact.  It's written to manage all dependencies and versioning.
 
 To build, clone the repository.
 
-    #~> git clone git://github.com/markkolich/havalo-client.git
+    #~> git clone git://github.com/markkolich/havalo-kvs-client.git
 
-Run SBT from within havalo-client.
+Run SBT from within havalo-kvs-client.
 
-    #~> cd havalo-client
-    #~/havalo-client> sbt
+    #~> cd havalo-kvs-client
+    #~/havalo-kvs-client> sbt
     ...
-    havalo-client:1.3.1>
+    havalo-kvs-client:1.4>
 
-You will see a `havalo-client` SBT prompt once all dependencies are resolved and the project is loaded.
+You will see a `havalo-kvs-client` SBT prompt once all dependencies are resolved and the project is loaded.
 
 In SBT, run `package` to compile and package the JAR.
 
-    havalo-client:1.3.1> package
-    [info] Compiling 12 Java sources to ~/havalo-client/target/classes...
-    [info] Packaging ~/havalo-client/dist/havalo-client-1.3.1.jar ...
+    havalo-kvs-client:1.4> package
+    [info] Compiling 12 Java sources to ~/havalo-kvs-client/target/classes...
+    [info] Packaging ~/havalo-kvs-client/dist/havalo-kvs-client-1.4.jar ...
     [info] Done packaging.
     [success] Total time: 4 s, completed
 
-Note the resulting JAR is placed into the **havalo-client/dist** directory.
+Note the resulting JAR is placed into the **havalo-kvs-client/dist** directory.
 
-To create an Eclipse Java project for havalo-client, run `eclipse` in SBT.
+To create an Eclipse Java project for havalo-kvs-client, run `eclipse` in SBT.
 
-    havalo-client:1.3.1> eclipse
+    havalo-kvs-client:1.4> eclipse
     ...
     [info] Successfully created Eclipse project files for project(s):
-    [info] havalo-client
+    [info] havalo-kvs-client
 
 You'll now have a real Eclipse **.project** file worthy of an Eclipse import.
 
@@ -437,8 +437,8 @@ Note your new **.classpath** file as well &mdash; all source JAR's are fetched a
 
 ## Licensing
 
-Copyright (c) 2012 <a href="http://mark.koli.ch">Mark S. Kolich</a>
+Copyright (c) 2014 <a href="http://mark.koli.ch">Mark S. Kolich</a>
 
 All code in this artifact is freely available for use and redistribution under the <a href="http://opensource.org/comment/991">MIT License</a>.
 
-See <a href="https://github.com/markkolich/havalo-client/blob/master/LICENSE">LICENSE</a> for details.
+See <a href="https://github.com/markkolich/havalo-kvs-client/blob/master/LICENSE">LICENSE</a> for details.

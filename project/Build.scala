@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2012 Mark S. Kolich
+ * Copyright (c) 2014 Mark S. Kolich
  * http://mark.koli.ch
  *
  * Permission is hereby granted, free of charge, to any person
@@ -33,7 +33,7 @@ object Dependencies {
 
   // Internal dependencies
 
-  private val kolichHttpClient4Closure = "com.kolich" % "kolich-httpclient4-closure" % "1.2.4" % "compile"
+  private val kolichHttpClient4Closure = "com.kolich" % "kolich-httpclient4-closure" % "2.3" % "compile"
 
   // External dependencies
 
@@ -51,22 +51,22 @@ object Dependencies {
 
 object Resolvers {
 
-  private val kolichRepo = "Kolich repo" at "http://markkolich.github.com/repo"
+  private val kolichRepo = "Kolich repo" at "http://markkolich.github.io/repo"
 
   val depResolvers = Seq(kolichRepo)
 
 }
 
-object HavaloClient extends Build {
+object HavaloKvsClient extends Build {
 
   import Dependencies._
   import Resolvers._
 
-  private val aName = "havalo-client"
-  private val aVer = "1.3.1"
+  private val aName = "havalo-kvs-client"
+  private val aVer = "1.4"
   private val aOrg = "com.kolich"
 
-  lazy val havaloClient: Project = Project(
+  lazy val havaloKvsClient: Project = Project(
     aName,
     new File("."),
     settings = Defaults.defaultSettings ++ Seq(resolvers := depResolvers) ++ Seq(
