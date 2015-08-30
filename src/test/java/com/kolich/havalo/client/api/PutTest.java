@@ -26,31 +26,23 @@
 
 package com.kolich.havalo.client.api;
 
-import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
-import static org.apache.commons.codec.binary.StringUtils.newStringUtf8;
-import static org.apache.commons.lang3.RandomStringUtils.randomAscii;
-import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
-import static org.apache.http.HttpHeaders.CONTENT_TYPE;
-import static org.apache.http.HttpHeaders.ETAG;
-import static org.apache.http.HttpHeaders.IF_MATCH;
-import static org.apache.http.HttpStatus.SC_CONFLICT;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayOutputStream;
-import java.util.List;
-
+import com.kolich.common.functional.either.Either;
+import com.kolich.havalo.client.HavaloClientTestCase;
+import com.kolich.havalo.client.entities.FileObject;
+import com.kolich.http.common.response.HttpFailure;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
 import org.junit.Test;
 
-import com.kolich.common.either.Either;
-import com.kolich.havalo.client.HavaloClientTestCase;
-import com.kolich.havalo.client.entities.FileObject;
-import com.kolich.http.common.response.HttpFailure;
+import java.io.ByteArrayOutputStream;
+import java.util.List;
+
+import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
+import static org.apache.commons.codec.binary.StringUtils.newStringUtf8;
+import static org.apache.commons.lang3.RandomStringUtils.randomAscii;
+import static org.apache.http.HttpHeaders.*;
+import static org.apache.http.HttpStatus.*;
+import static org.junit.Assert.*;
 
 public class PutTest extends HavaloClientTestCase {
 	

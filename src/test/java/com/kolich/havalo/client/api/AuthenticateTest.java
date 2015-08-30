@@ -26,14 +26,13 @@
 
 package com.kolich.havalo.client.api;
 
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
-
-import com.kolich.common.either.Either;
+import com.kolich.common.functional.either.Either;
 import com.kolich.havalo.client.HavaloClientTestCase;
 import com.kolich.havalo.client.entities.KeyPair;
 import com.kolich.http.common.response.HttpFailure;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 public class AuthenticateTest extends HavaloClientTestCase {
 	

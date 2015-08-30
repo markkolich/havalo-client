@@ -26,20 +26,19 @@
 
 package com.kolich.havalo.client.api;
 
+import com.kolich.common.functional.either.Either;
+import com.kolich.havalo.client.HavaloClientTestCase;
+import com.kolich.havalo.client.entities.FileObject;
+import com.kolich.http.common.response.HttpFailure;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.kolich.common.either.Either;
-import com.kolich.havalo.client.HavaloClientTestCase;
-import com.kolich.havalo.client.entities.FileObject;
-import com.kolich.http.common.response.HttpFailure;
 
 public class DeleteTest extends HavaloClientTestCase {
 	

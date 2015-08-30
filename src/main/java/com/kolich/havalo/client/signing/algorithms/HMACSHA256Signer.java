@@ -26,15 +26,15 @@
 
 package com.kolich.havalo.client.signing.algorithms;
 
-import static org.apache.commons.codec.binary.Base64.encodeBase64;
-import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
-import static org.apache.commons.codec.binary.StringUtils.newStringUtf8;
+import com.kolich.havalo.client.HavaloClientException;
+import com.kolich.havalo.client.signing.HavaloCredentials;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.kolich.havalo.client.HavaloClientException;
-import com.kolich.havalo.client.signing.HavaloCredentials;
+import static org.apache.commons.codec.binary.Base64.encodeBase64;
+import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
+import static org.apache.commons.codec.binary.StringUtils.newStringUtf8;
 
 /**
  * Computes an HMAC-SHA256 signature.
@@ -54,12 +54,9 @@ public final class HMACSHA256Signer implements HavaloSigningAlgorithm {
 			// Get a new instance of the HMAC-SHA256 algorithm.
 			final Mac mac = Mac.getInstance(HMAC_SHA256_ALGORITHM_NAME);
 			// Init it with our secret and the secret-key algorithm.
-			mac.init(new SecretKeySpec(
-				getBytesUtf8(credentials.getSecret()),
-				HMAC_SHA256_ALGORITHM_NAME));
+			mac.init(new SecretKeySpec(getBytesUtf8(credentials.getSecret()), HMAC_SHA256_ALGORITHM_NAME));
 			// Sign the input.
-			result = newStringUtf8(encodeBase64(mac.doFinal(
-				getBytesUtf8(input))));
+			result = newStringUtf8(encodeBase64(mac.doFinal(getBytesUtf8(input))));
 		} catch (Exception e) {
 			throw new HavaloClientException("Failed to SHA-256 sign input " +
 				"string: " + input, e);

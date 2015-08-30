@@ -26,11 +26,11 @@
 
 package com.kolich.havalo.client.entities;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
-
-import com.google.gson.annotations.SerializedName;
 
 public final class ObjectList implements Serializable {
 	
@@ -41,11 +41,11 @@ public final class ObjectList implements Serializable {
 				
 	// For GSON
 	public ObjectList() {
-		objects_ = new TreeSet<FileObject>();
+		objects_ = new TreeSet<>();
 	}
 	
 	public Set<FileObject> getObjectList() {
-		return new TreeSet<FileObject>(objects_);
+		return new TreeSet<>(objects_);
 	}
 	
 	// Straight from Eclipse

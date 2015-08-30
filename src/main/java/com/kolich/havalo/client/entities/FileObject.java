@@ -26,12 +26,12 @@
 
 package com.kolich.havalo.client.entities;
 
+import com.google.common.collect.Maps;
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.gson.annotations.SerializedName;
 
 public final class FileObject implements Serializable, Comparable<FileObject> {
 	
@@ -45,7 +45,7 @@ public final class FileObject implements Serializable, Comparable<FileObject> {
 	
 	// For GSON
 	public FileObject() {
-		headers_ = new LinkedHashMap<String, List<String>>();
+		headers_ = Maps.newLinkedHashMap();
 	}
 	
 	public String getName() {
@@ -53,7 +53,7 @@ public final class FileObject implements Serializable, Comparable<FileObject> {
 	}
 		
 	public Map<String, List<String>> getAllHeaders() {
-		return new LinkedHashMap<String, List<String>>(headers_);
+		return Maps.newLinkedHashMap(headers_);
 	}
 		
 	public List<String> getHeader(String name) {

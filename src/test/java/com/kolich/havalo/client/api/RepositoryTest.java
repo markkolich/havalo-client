@@ -26,24 +26,23 @@
 
 package com.kolich.havalo.client.api;
 
-import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
-import static org.apache.http.HttpHeaders.CONTENT_TYPE;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.UUID;
-
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
-import org.junit.Test;
-
-import com.kolich.common.either.Either;
+import com.kolich.common.functional.either.Either;
 import com.kolich.havalo.client.HavaloClientTestCase;
 import com.kolich.havalo.client.entities.FileObject;
 import com.kolich.havalo.client.entities.KeyPair;
 import com.kolich.havalo.client.entities.ObjectList;
 import com.kolich.http.common.response.HttpFailure;
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
+import org.junit.Test;
+
+import java.util.UUID;
+
+import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
+import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class RepositoryTest extends HavaloClientTestCase {
 	

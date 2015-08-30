@@ -72,9 +72,6 @@ public abstract class HavaloAbstractService {
 	/**
 	 * Prepares and signs the request.
 	 * @param request the request object
-	 * @return the {@link HavaloHttpResponse} response assuming the
-	 * request was successful. If the request was not successful, then
-	 * an exception will be thrown.
 	 */
 	protected final void signRequest(final HttpRequestBase request) {
 		checkNotNull(request, "Request cannot be null!");

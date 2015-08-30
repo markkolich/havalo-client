@@ -45,7 +45,7 @@ import com.kolich.havalo.client.signing.algorithms.HavaloSigningAlgorithm;
 public final class HavaloClientSigner extends HavaloAbstractSigner {
 	
 	public HavaloClientSigner(HavaloCredentials credentials,
-		HavaloSigningAlgorithm signer) {
+							  HavaloSigningAlgorithm signer) {
 		super(credentials, signer);
 	}
 	
@@ -69,8 +69,7 @@ public final class HavaloClientSigner extends HavaloAbstractSigner {
 	public void signHttpRequest(final HttpRequestBase request) {
 		// Add a Date header to the request.
     	request.addHeader(DATE, RFC822DateFormat.format(new Date()));
-    	final String signature = signer_.sign(credentials_,
-    		getStringToSign(request));
+    	final String signature = signer_.sign(credentials_, getStringToSign(request));
     	// Add the resulting Authorization header to the request.
 		request.addHeader(AUTHORIZATION,
 			// The format of the Authorization header ...

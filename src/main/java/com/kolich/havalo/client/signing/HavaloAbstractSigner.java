@@ -26,11 +26,10 @@
 
 package com.kolich.havalo.client.signing;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import com.kolich.havalo.client.signing.algorithms.HavaloSigningAlgorithm;
 import org.apache.http.client.methods.HttpRequestBase;
 
-import com.kolich.havalo.client.signing.algorithms.HavaloSigningAlgorithm;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class HavaloAbstractSigner {
 	
@@ -46,11 +45,9 @@ public abstract class HavaloAbstractSigner {
 	protected HavaloSigningAlgorithm signer_;
 	
 	public HavaloAbstractSigner(HavaloCredentials credentials,
-		HavaloSigningAlgorithm signer) {
-		checkNotNull(credentials, "The credentials cannot be null!");
-		checkNotNull(signer, "The signer cannot be null!");
-		credentials_ = credentials;
-		signer_ = signer;
+								HavaloSigningAlgorithm signer) {
+		credentials_ = checkNotNull(credentials, "The credentials cannot be null!");
+		signer_ = checkNotNull(signer, "The signer cannot be null!");
 	}
 	
 	/**
